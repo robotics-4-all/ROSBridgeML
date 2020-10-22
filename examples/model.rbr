@@ -1,0 +1,7 @@
+import brokers_def.br;
+
+ROSConnection localROS("localhost", 1115);
+
+AMQPConnection cloudRabbitConn<CloudRabbit>('bot', 'b0t', '/');  // (username, password, vhost)
+
+TopicBridge B2R SonarFrontData<"sensor_msgs/Range"> cloudRabbitConn('myrobot.sensors.sonar.front') -> localROS('/sonar/front');

@@ -1,0 +1,16 @@
+RabbitBroker CloudRabbit -> {
+  host: "r4a-platform.ddns.net";
+  amqp_port: 5672;
+  mqtt_port: 1896;
+  web_mqtt_port: 1897;
+  stomp_port: 1898;
+  web_stomp_port: 1899;
+  vhosts: ['/', 'klpanagi'];
+  users: [('bot', 'b0t'), ('klpanagi', 'klpanagi')];
+}
+
+RedisBroker MyLocalRedis -> {
+  host: "localhost";
+  port: 6379;
+  users: [('bot', 'b0t'), ('klpanagi', 'klpanagi')];
+}

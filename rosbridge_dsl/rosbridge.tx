@@ -1,0 +1,74 @@
+/*
+    ROS/ROS2 Bridge DSL
+*/
+
+reference broker_dsl as br
+
+Model:
+    imports*=Import
+    connections*=Connection
+    bridges*=Bridge
+;
+
+Connection: BrokerConnection | ROSConnection;
+
+ROSConnection:
+    'ROSConnection' name=ID ('(' host=STRING ',' port=INT ')')? ';'
+;
+
+// Broker Connection Definition ---------------------------------------->
+BrokerConnection: RedisConnection | AMQPConnection;
+
+AMQPConnection:
+    'AMQPConnection' name=ID '<' brokerRef=[br.AMQPBroker] '>'
+    '(' username=STRING ',' password=STRING ',' vhost=STRING ')' ';'
+;
+
+RedisConnection:
+    'RedisConnection' name=ID '<' brokerRef=[br.RedisBroker] '>'
+    '(' username=STRING ',' password=STRING ',' db=INT ')' ';'
+;
+// <--------------------------------------------------------------------
+
+Bridge: TopicBridge | RPCBridge;
+
+TopicBridge: TopicBridgeR2B | TopicBridgeB2R;
+
+TopicBridgeR2B:
+    'TopicBridge' 'R2B' name=ID '<' msgType=STRING '>'
+    rosConn=[ROSConnection] '(' rosURI=STRING ')' '->'
+    brokerConn=[BrokerConnection] '(' brokerURI=STRING ')' ';'
+;
+
+TopicBridgeB2R:
+    'TopicBridge' 'B2R' name=ID '<' msgType=STRING '>'
+    brokerConn=[BrokerConnection] '(' brokerURI=STRING ')' '->'
+    rosConn=[ROSConnection] '(' rosURI=STRING ')' ';'
+;
+
+RPCBridge:
+    'ServiceBridge' name=ID '<' msgType=STRING '>'
+    brokerConn=[BrokerConnection] '(' brokerURI=STRING ')' '->'
+    rosConn=[ROSConnection] '(' rosURI=STRING ')' ';'
+;
+
+FQN: ID+['.'];
+FQNI: ID+['.']('.*')?;
+Import: 'import' importURI=FQNI ('as' name=ID)? ';';
+
+// Import Rule for models. Import other models from files or textx
+// global scope database.
+// https://textx.github.io/textX/stable/multimetamodel/#use-case-meta-model-sharing-with-the-importuri-feature
+/* Import: 'import' importURI=STRING ('as' name=ID)? ';'; */
+
+Description: /\#(.*?)$/;
+
+// Special rule for comments. Comments start with //
+
+// Comments
+Comment: CommentLine | CommentBlock ;
+
+CommentLine: /\/\/.*?$/;
+
+CommentBlock: /\/\*(.|\n)*?\*\//;
+
