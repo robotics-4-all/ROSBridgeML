@@ -1,3 +1,0 @@
-[textx_languages]
-rosbridge_dsl = rosbridge_dsl:rosbridge_dsl_language
-

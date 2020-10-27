@@ -6,8 +6,8 @@ from .utils import get_mm
 __version__ = "0.1.0.dev"
 
 
-@language('rosbridge_dsl', '*.rbr')
-def rosbridge_dsl_language():
+@language('rosbridge', '*.rbr')
+def rosbridge_language():
     "rosbridge_dsl language"
     mm = get_mm()
 

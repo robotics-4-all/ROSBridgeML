@@ -1,8 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-import sys
+#!/usr/bin/env python
+
+"""The setup script."""
+
 import os
-from setuptools import setup
+import sys
+from setuptools import setup, find_packages
 
 this_dir = os.path.abspath(os.path.dirname(__file__))
 
@@ -10,11 +12,10 @@ VERSIONFILE = os.path.join(this_dir, "rosbridge_dsl", "__init__.py")
 VERSION = None
 for line in open(VERSIONFILE, "r").readlines():
     if line.startswith('__version__'):
-        VERSION = line.split('"')[1]
+        VERSION = line.split('\"')[1]
 
 if not VERSION:
     raise RuntimeError('No version defined in rosbridge_dsl.__init__.py')
-
 
 if sys.argv[-1].startswith('publish'):
     if os.system("pip list | grep wheel"):
@@ -33,5 +34,60 @@ if sys.argv[-1].startswith('publish'):
         print("  git push --tags")
     sys.exit()
 
+with open('README.md') as readme_file:
+    readme = readme_file.read()
 
-setup(version=VERSION)
+# with open('HISTORY.rst') as history_file:
+#     history = history_file.read()
+history = ''
+
+requirements = ['Click>=7.0', 'textx', ]
+
+setup_requirements = [ ]
+
+test_requirements = [ ]
+
+setup(
+    author="Konstantinos Panayiotou",
+    author_email='klpanagi@gmail.com',
+    python_requires='>=3.5',
+    classifiers=[
+        'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+    ],
+    description="Python Boilerplate contains all the boilerplate you need to create a Python package.",
+    entry_points={
+        'console_scripts': [
+            'rosbridge=rosbridge_dsl.cli:main',
+        ],
+        'textx_generators': [
+            'rosbridge_ros=rosbridge_dsl.generator:generator_ros',
+            'rosbridge_ros2=rosbridge_dsl.generator:generator_ros2',
+        ],
+        'textx_languages': [
+            'rosbridge = rosbridge_dsl:rosbridge_language',
+        ]
+    },
+    install_requires=requirements,
+    license="MIT license",
+    long_description=readme + '\n\n' + history,
+    include_package_data=True,
+    package_data={'': ['*.tx']},
+    keywords='rosbridge',
+    name='rosbridge_dsl',
+    packages=find_packages(include=['rosbridge_dsl', 'rosbridge_dsl.*']),
+    setup_requires=setup_requirements,
+    test_suite='tests',
+    tests_require=test_requirements,
+    url='https://github.com/robotics-4-all/rosbridge-dsl',
+    version=VERSION,
+    zip_safe=False,
+)
+
