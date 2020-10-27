@@ -54,7 +54,7 @@ def main():
         uri='{{ c.brokerURI }}',
         name='{{ c.name }}',
         broker_ref=broker,
-        auth=BrokerAuthPlain(username='{{ brokerConn.username }}', password='{{ brokerConn.password }}')
+        auth=BrokerAuthPlain(username='{{ c.brokerConn.username }}', password='{{ c.brokerConn.password }}')
     )
 
     executor.run_connector(SubConnector(ros_ep_{{ c.name }}, broker_ep_{{ c.name }}))
@@ -76,7 +76,7 @@ def main():
         uri='{{ c.brokerURI }}',
         name='{{ c.name }}',
         broker_ref=broker,
-        auth=BrokerAuthPlain(username='{{ brokerConn.username }}', password='{{ brokerConn.password }}')
+        auth=BrokerAuthPlain(username='{{ c.brokerConn.username }}', password='{{ c.brokerConn.password }}')
     )
 
     executor.run_connector(PubConnector(ros_ep_{{ c.name }}, broker_ep_{{ c.name }}))
@@ -92,7 +92,7 @@ def main():
         uri='{{ c.brokerURI }}',
         name='{{ c.name }}',
         broker_ref=broker,
-        auth=BrokerAuthPlain(username='{{ brokerConn.username }}', password='{{ brokerConn.password }}')
+        auth=BrokerAuthPlain(username='{{ c.brokerConn.username }}', password='{{ c.brokerConn.password }}')
     )
 
     executor.run_connector(RPCConnector(ros_ep_{{ c.name }}, broker_ep_{{ c.name }}))

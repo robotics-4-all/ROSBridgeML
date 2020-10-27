@@ -1,5 +1,5 @@
 import sys
-from os import path, mkdir, getcwd
+from os import path, mkdir, getcwd, chmod
 
 import textx
 from textx import GeneratorDesc
@@ -28,9 +28,39 @@ class GeneratorROS(Generator):
     srcgen_folder = path.join(getcwd(), 'bridge_gen')
 
     @staticmethod
-    def generate(model_fpath: str, gen_imports: bool = True,
+    def generate(model_fpath: str,
                  out_dir: str = None):
-        pass
+        # Create output folder
+        if out_dir is None:
+            out_dir = GeneratorROS.srcgen_folder
+        else:
+            out_dir = path.join(out_dir, 'bridge_gen')
+        if not path.exists(out_dir):
+            mkdir(out_dir)
+        model, imports = build_model(model_fpath)
+        gen_params = {
+            'bridges': {
+                'topic': {
+                    'b2r': [],
+                    'r2b': []
+                },
+                'rpc': []
+            }
+        }
+        for br in model.bridges:
+            if 'TopicBridge' in br.__class__.__name__:
+                if br.type == 'B2R':  # Broker-to-ROS Topic bridge
+                    gen_params['bridges']['topic']['b2r'].append(br)
+                elif br.type == 'R2B':  # ROS-to-Broker Topic bridge
+                    gen_params['bridges']['topic']['r2b'].append(br)
+            elif 'RPCBridge' in br.__class__.__name__:
+                gen_params['bridges']['rpc'].append(br)
+        print(gen_params)
+        out_file = path.join(out_dir, "bridges_node.py")
+        with open(out_file, 'w') as f:
+            f.write(GeneratorROS.bridge_tpl.render(
+                bridges=gen_params['bridges']))
+        chmod(out_file, 509)
 
 
 class GeneratorROS2(Generator):
@@ -45,18 +75,14 @@ class GeneratorROS2(Generator):
 
 def _generator_ros_impl(metamodel, model, output_path, overwrite,
                         debug, **custom_args):
-        # Some code that perform generation
-    gen_imports = custom_args['gen_imports'] if 'gen_imports' in custom_args \
-        else True
-    GeneratorROS.generate(model._tx_filename, gen_imports=gen_imports)
+    # Some code that perform generation
+    GeneratorROS.generate(model._tx_filename)
 
 
 def _generator_ros2_impl(metamodel, model, output_path, overwrite,
                          debug, **custom_args):
-        # Some code that perform generation
-    gen_imports = custom_args['gen_imports'] if 'gen_imports' in custom_args \
-        else True
-    GeneratorROS2.generate(model._tx_filename, gen_imports=gen_imports)
+    # Some code that perform generation
+    GeneratorROS2.generate(model._tx_filename)
 
 
 generator_ros = GeneratorDesc(
