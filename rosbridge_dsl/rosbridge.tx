@@ -32,25 +32,20 @@ RedisConnection:
 
 Bridge: TopicBridge | RPCBridge;
 
-TopicBridge: TopicBridgeR2B | TopicBridgeB2R;
-
-TopicBridgeR2B:
-    'TopicBridge' 'R2B' name=ID '<' msgType=STRING '>'
-    rosConn=[ROSConnection] '(' rosURI=STRING ')' '->'
-    brokerConn=[BrokerConnection] '(' brokerURI=STRING ')' ';'
-;
-
-TopicBridgeB2R:
-    'TopicBridge' 'B2R' name=ID '<' msgType=STRING '>'
+TopicBridge:
+    'TopicBridge' type=TopicBridgeType name=ID '<' msgType=STRING '>'
     brokerConn=[BrokerConnection] '(' brokerURI=STRING ')' '->'
     rosConn=[ROSConnection] '(' rosURI=STRING ')' ';'
 ;
+
+TopicBridgeType: 'B2R' | 'R2B';
 
 RPCBridge:
     'ServiceBridge' name=ID '<' msgType=STRING '>'
     brokerConn=[BrokerConnection] '(' brokerURI=STRING ')' '->'
     rosConn=[ROSConnection] '(' rosURI=STRING ')' ';'
 ;
+// <--------------------------------------------------------------------
 
 FQN: ID+['.'];
 FQNI: ID+['.']('.*')?;
