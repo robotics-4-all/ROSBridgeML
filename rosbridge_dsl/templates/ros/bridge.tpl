@@ -83,7 +83,7 @@ def main():
 {% endfor %}
 {% for c in bridges['rpc'] %}
     ros_ep_{{ c.name }} = ROSServiceEndpoint(
-        srv_type='{{ c.msg_type }}',
+        srv_type='{{ c.msgType }}',
         uri='{{ c.rosURI }}',
         name='{{ c.name }}'
     )

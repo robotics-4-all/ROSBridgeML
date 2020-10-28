@@ -5,3 +5,8 @@ ROSConnection localROS("localhost", 1115);
 AMQPConnection cloudRabbitConn<CloudRabbit>('bot', 'b0t', '/');  // (username, password, vhost)
 
 TopicBridge B2R SonarFrontData<"sensor_msgs/Range"> cloudRabbitConn('myrobot.sensors.sonar.front') -> localROS('/sonar/front');
+
+TopicBridge R2B SonarFrontData<"sensor_msgs/Range"> localROS('/sonar/rear') -> cloudRabbitConn('myrobot.sensors.sonar.rear');
+
+ServiceBridge SonarFrontEnable <"std_srvs/Empty"> cloudRabbitConn('myrobot.sensors.sonar.front.enable') -> localROS('/sonar/front/enable');
+ServiceBridge SonarFrontDisable <"std_srvs/Empty"> cloudRabbitConn('myrobot.sensors.sonar.front.disable') -> localROS('/sonar/front/disable');

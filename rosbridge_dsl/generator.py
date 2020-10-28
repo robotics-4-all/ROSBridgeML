@@ -49,11 +49,10 @@ class GeneratorROS(Generator):
             }
         }
         for br in model.bridges:
-            if 'TopicBridge' in br.__class__.__name__:
-                if br.type == 'B2R':  # Broker-to-ROS Topic bridge
-                    gen_params['bridges']['topic']['b2r'].append(br)
-                elif br.type == 'R2B':  # ROS-to-Broker Topic bridge
-                    gen_params['bridges']['topic']['r2b'].append(br)
+            if 'TopicBridgeB2R' in br.__class__.__name__:
+                gen_params['bridges']['topic']['b2r'].append(br)
+            elif 'TopicBridgeR2B' in br.__class__.__name__:
+                gen_params['bridges']['topic']['r2b'].append(br)
             elif 'RPCBridge' in br.__class__.__name__:
                 gen_params['bridges']['rpc'].append(br)
         print(gen_params)
@@ -62,6 +61,7 @@ class GeneratorROS(Generator):
             f.write(GeneratorROS.bridge_tpl.render(
                 bridges=gen_params['bridges'],
                 python_version=GeneratorROS.python_version))
+        # Give execution permissions to the generated file
         chmod(out_file, 509)
 
 
@@ -72,7 +72,7 @@ class GeneratorROS2(Generator):
     @staticmethod
     def generate(model_fpath: str, gen_imports: bool = True,
                  out_dir: str = None):
-        pass
+        raise NotImplementedError()
 
 
 def _generator_ros_impl(metamodel, model, output_path, overwrite,
