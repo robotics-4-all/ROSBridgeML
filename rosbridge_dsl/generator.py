@@ -26,6 +26,7 @@ class Generator:
 class GeneratorROS(Generator):
     bridge_tpl = jinja_env.get_template('ros/bridge.tpl')
     srcgen_folder = path.join(getcwd(), 'bridge_gen')
+    python_version = 3
 
     @staticmethod
     def generate(model_fpath: str,
@@ -59,7 +60,8 @@ class GeneratorROS(Generator):
         out_file = path.join(out_dir, "bridges_node.py")
         with open(out_file, 'w') as f:
             f.write(GeneratorROS.bridge_tpl.render(
-                bridges=gen_params['bridges']))
+                bridges=gen_params['bridges'],
+                python_version=GeneratorROS.python_version))
         chmod(out_file, 509)
 
 

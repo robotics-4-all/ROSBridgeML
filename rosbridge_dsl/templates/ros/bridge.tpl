@@ -1,4 +1,4 @@
-#!/usr/bin/env python{{ python_version }}
+#!/usr/bin/env python
 
 # Copyright (C) 2020  Panayiotou, Konstantinos <klpanagi@gmail.com>
 # Author: Panayiotou, Konstantinos <klpanagi@gmail.com>
@@ -45,7 +45,7 @@ def main():
         vhost='{{ c.brokerConn.vhost }}',
     )
     ros_ep_{{ c.name }} = ROSSubEndpoint(
-        msg_type='{{ c.msg_type }}',
+        msg_type='{{ c.msgType }}',
         uri='{{ c.rosURI }}',
         name='{{ c.name }}'
     )
@@ -67,7 +67,7 @@ def main():
         vhost='{{ c.brokerConn.vhost }}',
     )
     ros_ep_{{ c.name }} = ROSPubEndpoint(
-        msg_type='{{ c.msg_type }}',
+        msg_type='{{ c.msgType }}',
         uri='{{ c.rosURI }}',
         name='{{ c.name }}'
     )
