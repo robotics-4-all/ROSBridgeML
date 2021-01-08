@@ -1,12 +1,18 @@
-import brokers_def.br;
+AMQPConnection CloudConn -> {
+    host: 'r4a-platform.ddns.net';
+    port: 5782;
+    vhost: '/';
+    username: 'bot';
+    password: 'b0t';
+}
 
-ROSConnection localROS("localhost", 1115);
+ROS2Connection LocalROSConn -> {}
 
-AMQPConnection cloudRabbitConn<CloudRabbit>('bot', 'b0t', '/');  // (username, password, vhost)
-
-TopicBridge B2R SonarFrontData<"sensor_msgs/Range"> cloudRabbitConn('myrobot.sensors.sonar.front') -> localROS('/sonar/front');
-
-TopicBridge R2B SonarFrontData<"sensor_msgs/Range"> localROS('/sonar/rear') -> cloudRabbitConn('myrobot.sensors.sonar.rear');
-
-ServiceBridge SonarFrontEnable <"std_srvs/Empty"> cloudRabbitConn('myrobot.sensors.sonar.front.enable') -> localROS('/sonar/front/enable');
-ServiceBridge SonarFrontDisable <"std_srvs/Empty"> cloudRabbitConn('myrobot.sensors.sonar.front.disable') -> localROS('/sonar/front/disable');
+TopicBridge FrontSonarTopic -> {
+    msgType: "sensor_msgs/Range";
+    rosConn: LocalROSConn;
+    rosURI: "/sensors/sonar/front";
+    brokerConn: CloudConn;
+    brokerURI: "a";
+    direction: R2B;
+}
