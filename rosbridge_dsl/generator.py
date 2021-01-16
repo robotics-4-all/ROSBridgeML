@@ -45,16 +45,17 @@ class GeneratorROS(Generator):
                     'b2r': [],
                     'r2b': []
                 },
-                'rpc': []
+                'service': {
+                    'b2r': [],
+                    'r2b': []
+                }
             }
         }
         for br in model.bridges:
-            if 'TopicBridgeB2R' in br.__class__.__name__:
+            if 'TopicBridge' in br.__class__.__name__:
                 gen_params['bridges']['topic']['b2r'].append(br)
-            elif 'TopicBridgeR2B' in br.__class__.__name__:
-                gen_params['bridges']['topic']['r2b'].append(br)
-            elif 'RPCBridge' in br.__class__.__name__:
-                gen_params['bridges']['rpc'].append(br)
+            elif 'ServiceBridge' in br.__class__.__name__:
+                gen_params['bridges']['service']['b2r'].append(br)
         print(gen_params)
         out_file = path.join(out_dir, "bridges_node.py")
         with open(out_file, 'w') as f:
