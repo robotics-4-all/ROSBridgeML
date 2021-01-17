@@ -32,3 +32,12 @@ TopicBridge RearSonarTopic -> {
     brokerURI: "sensor.sonar.rear";
     direction: B2R;
 }
+
+ServiceBridge RearSonarState -> {
+    msgType: "std_srvs/SetBool";
+    rosConn: LocalROSConn;
+    rosURI: "/sensor/sonar/rear/state";
+    brokerConn: MyRedis;
+    brokerURI: "sensor.sonar.rear.state";
+    direction: B2R;
+}

@@ -5,8 +5,9 @@
 Model:
     (
     (imports*=Import)
-    (connections*=Connection)
     (bridges*=Bridge)
+    (brokerConn*=BrokerConnection)
+    (rosConn=ROSConnection)
     )#
 ;
 
@@ -15,7 +16,7 @@ Connection: BrokerConnection | ROSConnection;
 ROSConnection: ROS1Connection | ROS2Connection;
 
 ROS1Connection:
-    'ROS2Connection' name=ID '->' '{'
+    'ROS1Connection' name=ID '->' '{'
     (
         ('host:' host=STRING ';')?
         ('port:' port=INT ';')?
@@ -66,7 +67,7 @@ MQTTConnection:
 ;
 // <--------------------------------------------------------------------
 
-Bridge: TopicBridge | ServiceBridge;
+Bridge: TopicBridge | ServiceBridge | ActionBridge;
 
 TopicBridge:
     'TopicBridge' name=ID  '->' '{'
@@ -83,6 +84,19 @@ TopicBridge:
 
 ServiceBridge:
     'ServiceBridge' name=ID  '->' '{'
+    (
+        ('msgType:' msgType=STRING ';')
+        ('rosConn:' rosConn=[ROSConnection] ';')
+        ('rosURI:' rosURI=STRING ';')
+        ('brokerConn:' brokerConn=[BrokerConnection] ';')
+        ('brokerURI:' brokerURI=STRING ';')
+        ('direction:' direction=[BridgeDirection] ';')
+    )#
+    '}'
+;
+
+ActionBridge:
+    'ActionBridge' name=ID  '->' '{'
     (
         ('msgType:' msgType=STRING ';')
         ('rosConn:' rosConn=[ROSConnection] ';')

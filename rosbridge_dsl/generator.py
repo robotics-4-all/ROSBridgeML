@@ -81,11 +81,26 @@ class GeneratorROS2(Generator):
         model, imports = build_model(model_fpath)
         out_file = path.join(out_dir, "bridges_node.py")
 
+        if model.rosConn.__class__.__name__ != 'ROS2Connection':
+            print('[ERROR] - Did not found any ROS2Connection definition!')
+            return
+
+        GeneratorROS2.report(model)
+
         with open(out_file, 'w') as f:
             f.write(GeneratorROS2.bridge_tpl.render(
                 bridges=model.bridges))
         # Give execution permissions to the generated file
         chmod(out_file, 509)
+
+    @staticmethod
+    def report(model):
+        print(f'[*] - ROS Connection: Type={model.rosConn}')
+        for bridge in model.bridges:
+            print(f'[*] - Bridge: Type={bridge.__class__.__name__},' + \
+                  f' Direction={bridge.direction}, ROS_URI={bridge.rosURI},' + \
+                  f' Broker_URI={bridge.brokerURI},' + \
+                  f' Broker=<{bridge.brokerConn.host}:{bridge.brokerConn.port}>')
 
 
 def _generator_ros_impl(metamodel, model, output_path, overwrite,

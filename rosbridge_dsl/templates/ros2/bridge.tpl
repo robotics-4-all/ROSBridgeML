@@ -15,6 +15,71 @@ from ros2_msg_conv import (
 )
 
 
+class B2RServiceBridge:
+
+    def __init__(self, nh, ros_uri: str, msg_type: Any, broker_type: Any,
+                 broker_uri, broker_conn_params):
+        self.nh = nh
+        self.ros_uri = ros_uri
+        self.broker_uri = broker_uri
+        self.msg_type = msg_type
+        self.broker_type = broker_type
+        self.broker_conn_params = broker_conn_params
+
+        self._init_ros_endpoint()
+        self._init_broker_endpoint()
+
+    def _init_ros_endpoint(self):
+        self.ros_client = self.nh.create_client(self.msg_type, self.ros_uri)
+        tcount = 1.0
+        max_tcount = 10.0
+        while not self.ros_client.wait_for_service(timeout_sec=tcount):
+            self.nh.get_logger().info(
+                'ROS Service not available, waiting again...')
+            if tcount > max_tcount:
+                print('[ERROR] - ROS Service connection timeout!')
+                break
+            tcount += 1.0
+
+    def _init_broker_endpoint(self):
+        self.bservice = endpoint_factory(EndpointType.RPCService,
+                                         self.broker_type)(
+            rpc_name=self.broker_uri,
+            on_request=self.on_request,
+            conn_params=self.broker_conn_params
+        )
+        self.bservice.run()
+
+    def on_request(self, data):
+        _req = dict_to_ros2_msg(data, self.msg_type.Request)
+        self.nh.get_logger().info(f'Calling Service: {self.ros_uri}')
+        future = self.send_request(_req)
+        resp = self.wait_for_ros_resp(future)
+        _dresp = ros2_msg_to_dict(resp)
+        return _dresp
+
+    def send_request(self, req):
+        future = self.cli.call_async(req)
+        return future
+
+    def wait_for_ros_resp(self, future):
+        response = None
+        while True:
+            if future.done():
+                try:
+                    response = minimal_client.future.result()
+                except Exception as e:
+                    minimal_client.get_logger().info(
+                        'Service call failed %r' % (e,))
+                    response = self.msg_type.Response()
+                else:
+                    minimal_client.get_logger().info(
+                        'Result of add_two_ints: for %d + %d = %d' %
+                        (minimal_client.req.a, minimal_client.req.b, response.sum))
+                break
+        return response
+
+
 class B2RTopicBridge:
 
     def __init__(self, nh, ros_topic: str, msg_type: Any, broker_type: Any,
@@ -86,6 +151,7 @@ if __name__ == "__main__":
     nh = Node('ROSBridge')
     br_list = []
     {% for bridge in bridges %}
+    ## Broker Connection for Bridge ------------------------------------------>
     {% if bridge.brokerConn.__class__.__name__ == 'RedisConnection' %}
     broker_type = TransportType.REDIS
     from commlib.transports.redis import ConnectionParameters, Credentials
@@ -113,17 +179,31 @@ if __name__ == "__main__":
                                        port=int({{ bridge.brokerConn.port }}),
                                        creds=creds)
     {% endif %}
-    from {{ bridge.msgType.split('/')[0] }}.msg import {{ bridge.msgType.split('/')[1] }}
+    ## <-----------------------------------------------------------------------
     {% if bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'B2R' %}
+    ## Topic Bridge B2R ----------------------------------------------------->
+    from {{ bridge.msgType.split('/')[0] }}.msg import {{ bridge.msgType.split('/')[1] }}
     br = B2RTopicBridge(nh, '{{ bridge.rosURI }}', {{
         bridge.msgType.split('/')[1] }}, broker_type,
-                        '{{ bridge.brokerURI }}', conn_params)
+                             '{{ bridge.brokerURI }}', conn_params)
     br_list.append(br)
+    ## <-----------------------------------------------------------------------
     {% elif bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'R2B' %}
+    ## Topic Bridge R2B ----------------------------------------------------->
+    from {{ bridge.msgType.split('/')[0] }}.msg import {{ bridge.msgType.split('/')[1] }}
     br = R2BTopicBridge(nh, '{{ bridge.rosURI }}', {{
         bridge.msgType.split('/')[1] }}, broker_type,
-                        '{{ bridge.brokerURI }}', conn_params)
+                             '{{ bridge.brokerURI }}', conn_params)
     br_list.append(br)
+    ## <-----------------------------------------------------------------------
+    {% elif bridge.__class__.__name__ == 'ServiceBridge' and bridge.direction == 'B2R' %}
+    ## RPC Bridge B2R ------------------------------------------------------->
+    from {{ bridge.msgType.split('/')[0] }}.srv import {{ bridge.msgType.split('/')[1] }}
+    br = B2RServiceBridge(nh, '{{ bridge.rosURI }}', {{
+        bridge.msgType.split('/')[1] }}, broker_type,
+                             '{{ bridge.brokerURI }}', conn_params)
+    br_list.append(br)
+    ## <-----------------------------------------------------------------------
     {% endif %}
     {% endfor %}
 
