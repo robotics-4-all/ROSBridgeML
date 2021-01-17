@@ -6,13 +6,29 @@ AMQPConnection CloudConn -> {
     password: 'b0t';
 }
 
+RedisConnection MyRedis -> {
+    host: 'localhost';
+    port: 6379;
+    username: '';
+    password: '';
+}
+
 ROS2Connection LocalROSConn -> {}
 
 TopicBridge FrontSonarTopic -> {
     msgType: "sensor_msgs/Range";
     rosConn: LocalROSConn;
-    rosURI: "/sensors/sonar/front";
-    brokerConn: CloudConn;
-    brokerURI: "a";
+    rosURI: "/sensor/sonar/front";
+    brokerConn: MyRedis;
+    brokerURI: "sensor.sonar.front";
     direction: R2B;
+}
+
+TopicBridge RearSonarTopic -> {
+    msgType: "sensor_msgs/Range";
+    rosConn: LocalROSConn;
+    rosURI: "/sensor/sonar/rear";
+    brokerConn: MyRedis;
+    brokerURI: "sensor.sonar.rear";
+    direction: B2R;
 }

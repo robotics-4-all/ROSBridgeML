@@ -35,7 +35,7 @@ class GeneratorROS(Generator):
         if out_dir is None:
             out_dir = GeneratorROS.srcgen_folder
         else:
-            out_dir = path.join(out_dir, 'bridge_gen')
+            out_dir = path.join(out_dir, 'gen')
         if not path.exists(out_dir):
             mkdir(out_dir)
         model, imports = build_model(model_fpath)
@@ -68,12 +68,29 @@ class GeneratorROS(Generator):
 
 class GeneratorROS2(Generator):
     bridge_tpl = jinja_env.get_template('ros2/bridge.tpl')
-    srcgen_folder = path.join(getcwd(), 'bridge_gen')
+    srcgen_folder = path.join(getcwd(), 'gen')
 
     @staticmethod
     def generate(model_fpath: str, gen_imports: bool = True,
                  out_dir: str = None):
-        raise NotImplementedError()
+        if out_dir is None:
+            out_dir = GeneratorROS2.srcgen_folder
+        else:
+            out_dir = path.join(out_dir, 'gen')
+        if not path.exists(out_dir):
+            mkdir(out_dir)
+        model, imports = build_model(model_fpath)
+        out_file = path.join(out_dir, "bridges_node.py")
+
+
+        for bridge in model.bridges:
+            print(bridge.brokerConn.__class__.__name__)
+
+        with open(out_file, 'w') as f:
+            f.write(GeneratorROS2.bridge_tpl.render(
+                bridges=model.bridges))
+        # Give execution permissions to the generated file
+        chmod(out_file, 509)
 
 
 def _generator_ros_impl(metamodel, model, output_path, overwrite,

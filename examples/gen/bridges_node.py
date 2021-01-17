@@ -85,25 +85,21 @@ if __name__ == "__main__":
     rclpy.init()
     nh = Node('ROSBridge')
     br_list = []
-    {% for bridge in bridges %}
-    {% if bridge.brokerConn.__class__.__name__ == 'RedisConnection' %}
     broker_type = TransportType.REDIS
     from commlib.transports.redis import ConnectionParameters
-    conn_params = ConnectionParameters(host='{{ bridge.brokerConn.host }}',
-                                       port=int({{ bridge.brokerConn.port }}))
-    {% endif %}
-    from {{ bridge.msgType.split('/')[0] }}.msg import {{ bridge.msgType.split('/')[1] }}
-    {% if bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'B2R' %}
-    br = B2RTopicBridge(nh, '{{ bridge.rosURI }}', {{
-        bridge.msgType.split('/')[1] }}, broker_type,
-                        '{{ bridge.brokerURI }}', conn_params)
+    conn_params = ConnectionParameters(host='localhost',
+                                       port=int(6379))
+    from sensor_msgs.msg import Range
+    br = R2BTopicBridge(nh, '/sensor/sonar/front', Range, broker_type,
+                        'sensor.sonar.front', conn_params)
     br_list.append(br)
-    {% elif bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'R2B' %}
-    br = R2BTopicBridge(nh, '{{ bridge.rosURI }}', {{
-        bridge.msgType.split('/')[1] }}, broker_type,
-                        '{{ bridge.brokerURI }}', conn_params)
+    broker_type = TransportType.REDIS
+    from commlib.transports.redis import ConnectionParameters
+    conn_params = ConnectionParameters(host='localhost',
+                                       port=int(6379))
+    from sensor_msgs.msg import Range
+    br = B2RTopicBridge(nh, '/sensor/sonar/rear', Range, broker_type,
+                        'sensor.sonar.rear', conn_params)
     br_list.append(br)
-    {% endif %}
-    {% endfor %}
 
     rclpy.spin(nh)
