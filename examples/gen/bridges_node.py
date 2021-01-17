@@ -86,17 +86,25 @@ if __name__ == "__main__":
     nh = Node('ROSBridge')
     br_list = []
     broker_type = TransportType.REDIS
-    from commlib.transports.redis import ConnectionParameters
+    from commlib.transports.redis import ConnectionParameters, Credentials
+    creds = Credentials(username='',
+                        password='')
     conn_params = ConnectionParameters(host='localhost',
-                                       port=int(6379))
+                                       port=int(6379),
+                                       db=int(0),
+                                       creds=creds)
     from sensor_msgs.msg import Range
     br = R2BTopicBridge(nh, '/sensor/sonar/front', Range, broker_type,
                         'sensor.sonar.front', conn_params)
     br_list.append(br)
     broker_type = TransportType.REDIS
-    from commlib.transports.redis import ConnectionParameters
+    from commlib.transports.redis import ConnectionParameters, Credentials
+    creds = Credentials(username='',
+                        password='')
     conn_params = ConnectionParameters(host='localhost',
-                                       port=int(6379))
+                                       port=int(6379),
+                                       db=int(0),
+                                       creds=creds)
     from sensor_msgs.msg import Range
     br = B2RTopicBridge(nh, '/sensor/sonar/rear', Range, broker_type,
                         'sensor.sonar.rear', conn_params)

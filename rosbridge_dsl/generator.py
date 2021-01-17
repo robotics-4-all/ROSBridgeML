@@ -56,7 +56,6 @@ class GeneratorROS(Generator):
                 gen_params['bridges']['topic']['b2r'].append(br)
             elif 'ServiceBridge' in br.__class__.__name__:
                 gen_params['bridges']['service']['b2r'].append(br)
-        print(gen_params)
         out_file = path.join(out_dir, "bridges_node.py")
         with open(out_file, 'w') as f:
             f.write(GeneratorROS.bridge_tpl.render(
@@ -81,10 +80,6 @@ class GeneratorROS2(Generator):
             mkdir(out_dir)
         model, imports = build_model(model_fpath)
         out_file = path.join(out_dir, "bridges_node.py")
-
-
-        for bridge in model.bridges:
-            print(bridge.brokerConn.__class__.__name__)
 
         with open(out_file, 'w') as f:
             f.write(GeneratorROS2.bridge_tpl.render(

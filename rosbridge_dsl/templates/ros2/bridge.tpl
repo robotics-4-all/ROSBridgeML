@@ -88,9 +88,30 @@ if __name__ == "__main__":
     {% for bridge in bridges %}
     {% if bridge.brokerConn.__class__.__name__ == 'RedisConnection' %}
     broker_type = TransportType.REDIS
-    from commlib.transports.redis import ConnectionParameters
+    from commlib.transports.redis import ConnectionParameters, Credentials
+    creds = Credentials(username='{{ bridge.brokerConn.username }}',
+                        password='{{ bridge.brokerConn.password }}')
     conn_params = ConnectionParameters(host='{{ bridge.brokerConn.host }}',
-                                       port=int({{ bridge.brokerConn.port }}))
+                                       port=int({{ bridge.brokerConn.port }}),
+                                       db=int({{ bridge.brokerConn.db }}),
+                                       creds=creds)
+    {% elif bridge.brokerConn.__class__.__name__ == 'AMQPConnection' %}
+    broker_type = TransportType.AMQP
+    from commlib.transports.amqp import ConnectionParameters, Credentials
+    creds = Credentials(username='{{ bridge.brokerConn.username }}',
+                        password='{{ bridge.brokerConn.password }}')
+    conn_params = ConnectionParameters(host='{{ bridge.brokerConn.host }}',
+                                       port=int({{ bridge.brokerConn.port }}),
+                                       vhost='{{ bridge.brokerConn.vhost }}',
+                                       creds=creds)
+    {% elif bridge.brokerConn.__class__.__name__ == 'MQTTConnection' %}
+    broker_type = TransportType.MQTT
+    from commlib.transports.mqtt import ConnectionParameters, Credentials
+    creds = Credentials(username='{{ bridge.brokerConn.username }}',
+                        password='{{ bridge.brokerConn.password }}')
+    conn_params = ConnectionParameters(host='{{ bridge.brokerConn.host }}',
+                                       port=int({{ bridge.brokerConn.port }}),
+                                       creds=creds)
     {% endif %}
     from {{ bridge.msgType.split('/')[0] }}.msg import {{ bridge.msgType.split('/')[1] }}
     {% if bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'B2R' %}
