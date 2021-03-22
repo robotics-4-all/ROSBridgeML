@@ -1,0 +1,117 @@
+@startuml
+set namespaceSeparator .
+
+
+class rosbridge.Model  {
+}
+
+
+class rosbridge.Connection <<abstract>> {
+}
+
+
+class rosbridge.ROSConnection <<abstract>> {
+}
+
+
+class rosbridge.ROS1Connection  {
+  name : ID
+  host : STRING
+  port : INT
+}
+
+
+class rosbridge.ROS2Connection  {
+  name : ID
+}
+
+
+class rosbridge.BrokerConnection <<abstract>> {
+}
+
+
+class rosbridge.AMQPConnection  {
+  name : ID
+  host : STRING
+  port : INT
+  username : STRING
+  password : STRING
+  vhost : STRING
+}
+
+
+class rosbridge.RedisConnection  {
+  name : ID
+  host : STRING
+  port : INT
+  username : STRING
+  password : STRING
+  db : INT
+}
+
+
+class rosbridge.MQTTConnection  {
+  name : ID
+  host : STRING
+  port : INT
+  username : STRING
+  password : STRING
+}
+
+
+class rosbridge.Bridge <<abstract>> {
+}
+
+
+class rosbridge.TopicBridge  {
+  name : ID
+  msgType : STRING
+  rosURI : STRING
+  brokerURI : STRING
+  direction : BridgeDirection
+}
+
+
+class rosbridge.ServiceBridge  {
+  name : ID
+  msgType : STRING
+  rosURI : STRING
+  brokerURI : STRING
+  direction : BridgeDirection
+}
+
+
+class rosbridge.Import  {
+  importURI : FQN
+  name : ID
+}
+
+
+rosbridge.Model *-- "0..*" rosbridge.Import
+rosbridge.Model *-- "0..*" rosbridge.Connection
+rosbridge.Model *-- "0..*" rosbridge.Bridge
+rosbridge.Connection <|-- rosbridge.BrokerConnection
+rosbridge.Connection <|-- rosbridge.ROSConnection
+rosbridge.ROSConnection <|-- rosbridge.ROS1Connection
+rosbridge.ROSConnection <|-- rosbridge.ROS2Connection
+rosbridge.BrokerConnection <|-- rosbridge.RedisConnection
+rosbridge.BrokerConnection <|-- rosbridge.AMQPConnection
+rosbridge.BrokerConnection <|-- rosbridge.MQTTConnection
+rosbridge.Bridge <|-- rosbridge.TopicBridge
+rosbridge.Bridge <|-- rosbridge.ServiceBridge
+rosbridge.TopicBridge o-- rosbridge.ROSConnection
+rosbridge.TopicBridge o-- rosbridge.BrokerConnection
+rosbridge.ServiceBridge o-- rosbridge.ROSConnection
+rosbridge.ServiceBridge o-- rosbridge.BrokerConnection
+
+legend
+  Match rules:
+  |= Name  |= Rule details |
+  | CommentBlock | \\/\\*(.\|\\n)*\?\\*\\/ |
+  | CommentLine | \\/\\/.*\?$ |
+  | Comment |  |
+  | FQN | ID (. ID)* |
+  | BridgeDirection | B2R\|R2B |
+end legend
+
+@enduml

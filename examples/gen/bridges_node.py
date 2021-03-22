@@ -150,61 +150,53 @@ if __name__ == "__main__":
     rclpy.init()
     nh = Node('ROSBridge')
     br_list = []
-    {% for bridge in bridges %}
     ## Broker Connection for Bridge ------------------------------------------>
-    {% if bridge.brokerConn.__class__.__name__ == 'RedisConnection' %}
     broker_type = TransportType.REDIS
     from commlib.transports.redis import ConnectionParameters, Credentials
-    creds = Credentials(username='{{ bridge.brokerConn.username }}',
-                        password='{{ bridge.brokerConn.password }}')
-    conn_params = ConnectionParameters(host='{{ bridge.brokerConn.host }}',
-                                       port=int({{ bridge.brokerConn.port }}),
-                                       db=int({{ bridge.brokerConn.db }}),
+    creds = Credentials(username='',
+                        password='')
+    conn_params = ConnectionParameters(host='localhost',
+                                       port=int(6379),
+                                       db=int(0),
                                        creds=creds)
-    {% elif bridge.brokerConn.__class__.__name__ == 'AMQPConnection' %}
-    broker_type = TransportType.AMQP
-    from commlib.transports.amqp import ConnectionParameters, Credentials
-    creds = Credentials(username='{{ bridge.brokerConn.username }}',
-                        password='{{ bridge.brokerConn.password }}')
-    conn_params = ConnectionParameters(host='{{ bridge.brokerConn.host }}',
-                                       port=int({{ bridge.brokerConn.port }}),
-                                       vhost='{{ bridge.brokerConn.vhost }}',
-                                       creds=creds)
-    {% elif bridge.brokerConn.__class__.__name__ == 'MQTTConnection' %}
-    broker_type = TransportType.MQTT
-    from commlib.transports.mqtt import ConnectionParameters, Credentials
-    creds = Credentials(username='{{ bridge.brokerConn.username }}',
-                        password='{{ bridge.brokerConn.password }}')
-    conn_params = ConnectionParameters(host='{{ bridge.brokerConn.host }}',
-                                       port=int({{ bridge.brokerConn.port }}),
-                                       creds=creds)
-    {% endif %}
     ## <-----------------------------------------------------------------------
-    {% if bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'B2R' %}
-    ## Topic Bridge B2R ----------------------------------------------------->
-    from {{ bridge.msgType.split('/')[0] }}.msg import {{ bridge.msgType.split('/')[1] }}
-    br = B2RTopicBridge(nh, '{{ bridge.rosURI }}', {{
-        bridge.msgType.split('/')[1] }}, broker_type,
-                             '{{ bridge.brokerURI }}', conn_params)
-    br_list.append(br)
-    ## <-----------------------------------------------------------------------
-    {% elif bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'R2B' %}
     ## Topic Bridge R2B ----------------------------------------------------->
-    from {{ bridge.msgType.split('/')[0] }}.msg import {{ bridge.msgType.split('/')[1] }}
-    br = R2BTopicBridge(nh, '{{ bridge.rosURI }}', {{
-        bridge.msgType.split('/')[1] }}, broker_type,
-                             '{{ bridge.brokerURI }}', conn_params)
+    from sensor_msgs.msg import Range
+    br = R2BTopicBridge(nh, '/sensor/sonar/front', Range, broker_type,
+                             'sensor.sonar.front', conn_params)
     br_list.append(br)
     ## <-----------------------------------------------------------------------
-    {% elif bridge.__class__.__name__ == 'ServiceBridge' and bridge.direction == 'B2R' %}
+    ## Broker Connection for Bridge ------------------------------------------>
+    broker_type = TransportType.REDIS
+    from commlib.transports.redis import ConnectionParameters, Credentials
+    creds = Credentials(username='',
+                        password='')
+    conn_params = ConnectionParameters(host='localhost',
+                                       port=int(6379),
+                                       db=int(0),
+                                       creds=creds)
+    ## <-----------------------------------------------------------------------
+    ## Topic Bridge B2R ----------------------------------------------------->
+    from sensor_msgs.msg import Range
+    br = B2RTopicBridge(nh, '/sensor/sonar/rear', Range, broker_type,
+                             'sensor.sonar.rear', conn_params)
+    br_list.append(br)
+    ## <-----------------------------------------------------------------------
+    ## Broker Connection for Bridge ------------------------------------------>
+    broker_type = TransportType.REDIS
+    from commlib.transports.redis import ConnectionParameters, Credentials
+    creds = Credentials(username='',
+                        password='')
+    conn_params = ConnectionParameters(host='localhost',
+                                       port=int(6379),
+                                       db=int(0),
+                                       creds=creds)
+    ## <-----------------------------------------------------------------------
     ## RPC Bridge B2R ------------------------------------------------------->
-    from {{ bridge.msgType.split('/')[0] }}.srv import {{ bridge.msgType.split('/')[1] }}
-    br = B2RServiceBridge(nh, '{{ bridge.rosURI }}', {{
-        bridge.msgType.split('/')[1] }}, broker_type,
-                             '{{ bridge.brokerURI }}', conn_params)
+    from std_srvs.srv import SetBool
+    br = B2RServiceBridge(nh, '/sensor/sonar/rear/state', SetBool, broker_type,
+                             'sensor.sonar.rear.state', conn_params)
     br_list.append(br)
     ## <-----------------------------------------------------------------------
-    {% endif %}
-    {% endfor %}
 
     rclpy.spin(nh)

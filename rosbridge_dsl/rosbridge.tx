@@ -2,67 +2,119 @@
     ROS/ROS2 Bridge DSL
 */
 
-reference broker_dsl as br
-
 Model:
-    imports*=Import
-    connections*=Connection
-    bridges*=Bridge
+    (
+    (imports*=Import)
+    (bridges*=Bridge)
+    (brokerConn*=BrokerConnection)
+    (rosConn=ROSConnection)
+    )#
 ;
 
 Connection: BrokerConnection | ROSConnection;
 
-ROSConnection:
-    'ROSConnection' name=ID ('(' host=STRING ',' port=INT ')')? ';'
+ROSConnection: ROS1Connection | ROS2Connection;
+
+ROS1Connection:
+    'ROS1Connection' name=ID '->' '{'
+    (
+        ('host:' host=STRING ';')?
+        ('port:' port=INT ';')?
+    )#
+    '}'
+;
+
+ROS2Connection:
+    'ROS2Connection' name=ID '->' '{' '}'
 ;
 
 // Broker Connection Definition ---------------------------------------->
-BrokerConnection: RedisConnection | AMQPConnection;
+BrokerConnection: RedisConnection | AMQPConnection | MQTTConnection;
 
 AMQPConnection:
-    'AMQPConnection' name=ID '<' brokerRef=[br.AMQPBroker] '>'
-    '(' username=STRING ',' password=STRING ',' vhost=STRING ')' ';'
+    'AMQPConnection' name=ID '->' '{'
+    (
+        ('host:' host=STRING ';')
+        ('port:' port=INT ';')
+        ('username:' username=STRING ';')?
+        ('password:' password=STRING ';')?
+        ('vhost:' vhost=STRING ';')?
+    )#
+    '}'
 ;
 
 RedisConnection:
-    'RedisConnection' name=ID '<' brokerRef=[br.RedisBroker] '>'
-    '(' username=STRING ',' password=STRING ',' db=INT ')' ';'
+    'RedisConnection' name=ID '->' '{'
+    (
+        ('host:' host=STRING ';')
+        ('port:' port=INT ';')
+        ('username:' username=STRING ';')?
+        ('password:' password=STRING ';')?
+        ('db:' db=INT ';')?
+    )#
+    '}'
+;
+
+MQTTConnection:
+    'RedisConnection' name=ID '->' '{'
+    (
+        ('host:' host=STRING ';')
+        ('port:' port=INT ';')
+        ('username:' username=STRING ';')?
+        ('password:' password=STRING ';')?
+    )#
+    '}'
 ;
 // <--------------------------------------------------------------------
 
-Bridge: TopicBridge | RPCBridge;
+Bridge: TopicBridge | ServiceBridge | ActionBridge;
 
-TopicBridge: TopicBridgeR2B | TopicBridgeB2R;
-
-TopicBridgeR2B:
-    'TopicBridge' 'R2B' name=ID '<' msgType=STRING '>'
-    rosConn=[ROSConnection] '(' rosURI=STRING ')' '->'
-    brokerConn=[BrokerConnection] '(' brokerURI=STRING ')' ';'
+TopicBridge:
+    'TopicBridge' name=ID  '->' '{'
+    (
+        ('msgType:' msgType=STRING ';')
+        ('rosConn:' rosConn=[ROSConnection] ';')
+        ('rosURI:' rosURI=STRING ';')
+        ('brokerConn:' brokerConn=[BrokerConnection] ';')
+        ('brokerURI:' brokerURI=STRING ';')
+        ('direction:' direction=[BridgeDirection] ';')
+    )#
+    '}'
 ;
 
-TopicBridgeB2R:
-    'TopicBridge' 'B2R' name=ID '<' msgType=STRING '>'
-    brokerConn=[BrokerConnection] '(' brokerURI=STRING ')' '->'
-    rosConn=[ROSConnection] '(' rosURI=STRING ')' ';'
+ServiceBridge:
+    'ServiceBridge' name=ID  '->' '{'
+    (
+        ('msgType:' msgType=STRING ';')
+        ('rosConn:' rosConn=[ROSConnection] ';')
+        ('rosURI:' rosURI=STRING ';')
+        ('brokerConn:' brokerConn=[BrokerConnection] ';')
+        ('brokerURI:' brokerURI=STRING ';')
+        ('direction:' direction=[BridgeDirection] ';')
+    )#
+    '}'
 ;
 
-RPCBridge:
-    'ServiceBridge' name=ID '<' msgType=STRING '>'
-    brokerConn=[BrokerConnection] '(' brokerURI=STRING ')' '->'
-    rosConn=[ROSConnection] '(' rosURI=STRING ')' ';'
+ActionBridge:
+    'ActionBridge' name=ID  '->' '{'
+    (
+        ('msgType:' msgType=STRING ';')
+        ('rosConn:' rosConn=[ROSConnection] ';')
+        ('rosURI:' rosURI=STRING ';')
+        ('brokerConn:' brokerConn=[BrokerConnection] ';')
+        ('brokerURI:' brokerURI=STRING ';')
+        ('direction:' direction=[BridgeDirection] ';')
+    )#
+    '}'
 ;
 // <--------------------------------------------------------------------
 
-FQN: ID+['.'];
-FQNI: ID+['.']('.*')?;
-Import: 'import' importURI=FQNI ('as' name=ID)? ';';
+/* BridgeType: 'Topic' | 'Service' | 'Action' */
 
-// Import Rule for models. Import other models from files or textx
-// global scope database.
-// https://textx.github.io/textX/stable/multimetamodel/#use-case-meta-model-sharing-with-the-importuri-feature
-/* Import: 'import' importURI=STRING ('as' name=ID)? ';'; */
+BridgeDirection: 'B2R' | 'R2B';
 
-Description: /\#(.*?)$/;
+FQN: ID('.'ID)*;
+Import: 'import' importURI=FQN ('as' name=ID)? ';';
 
 // Special rule for comments. Comments start with //
 
@@ -72,4 +124,3 @@ Comment: CommentLine | CommentBlock ;
 CommentLine: /\/\/.*?$/;
 
 CommentBlock: /\/\*(.|\n)*?\*\//;
-

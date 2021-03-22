@@ -35,7 +35,7 @@ class GeneratorROS(Generator):
         if out_dir is None:
             out_dir = GeneratorROS.srcgen_folder
         else:
-            out_dir = path.join(out_dir, 'bridge_gen')
+            out_dir = path.join(out_dir, 'gen')
         if not path.exists(out_dir):
             mkdir(out_dir)
         model, imports = build_model(model_fpath)
@@ -45,17 +45,17 @@ class GeneratorROS(Generator):
                     'b2r': [],
                     'r2b': []
                 },
-                'rpc': []
+                'service': {
+                    'b2r': [],
+                    'r2b': []
+                }
             }
         }
         for br in model.bridges:
-            if 'TopicBridgeB2R' in br.__class__.__name__:
+            if 'TopicBridge' in br.__class__.__name__:
                 gen_params['bridges']['topic']['b2r'].append(br)
-            elif 'TopicBridgeR2B' in br.__class__.__name__:
-                gen_params['bridges']['topic']['r2b'].append(br)
-            elif 'RPCBridge' in br.__class__.__name__:
-                gen_params['bridges']['rpc'].append(br)
-        print(gen_params)
+            elif 'ServiceBridge' in br.__class__.__name__:
+                gen_params['bridges']['service']['b2r'].append(br)
         out_file = path.join(out_dir, "bridges_node.py")
         with open(out_file, 'w') as f:
             f.write(GeneratorROS.bridge_tpl.render(
@@ -67,12 +67,40 @@ class GeneratorROS(Generator):
 
 class GeneratorROS2(Generator):
     bridge_tpl = jinja_env.get_template('ros2/bridge.tpl')
-    srcgen_folder = path.join(getcwd(), 'bridge_gen')
+    srcgen_folder = path.join(getcwd(), 'gen')
 
     @staticmethod
     def generate(model_fpath: str, gen_imports: bool = True,
                  out_dir: str = None):
-        raise NotImplementedError()
+        if out_dir is None:
+            out_dir = GeneratorROS2.srcgen_folder
+        else:
+            out_dir = path.join(out_dir, 'gen')
+        if not path.exists(out_dir):
+            mkdir(out_dir)
+        model, imports = build_model(model_fpath)
+        out_file = path.join(out_dir, "bridges_node.py")
+
+        if model.rosConn.__class__.__name__ != 'ROS2Connection':
+            print('[ERROR] - Did not found any ROS2Connection definition!')
+            return
+
+        GeneratorROS2.report(model)
+
+        with open(out_file, 'w') as f:
+            f.write(GeneratorROS2.bridge_tpl.render(
+                bridges=model.bridges))
+        # Give execution permissions to the generated file
+        chmod(out_file, 509)
+
+    @staticmethod
+    def report(model):
+        print(f'[*] - ROS Connection: Type={model.rosConn}')
+        for bridge in model.bridges:
+            print(f'[*] - Bridge: Type={bridge.__class__.__name__},' + \
+                  f' Direction={bridge.direction}, ROS_URI={bridge.rosURI},' + \
+                  f' Broker_URI={bridge.brokerURI},' + \
+                  f' Broker=<{bridge.brokerConn.host}:{bridge.brokerConn.port}>')
 
 
 def _generator_ros_impl(metamodel, model, output_path, overwrite,
