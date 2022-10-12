@@ -1,43 +1,68 @@
-AMQPConnection CloudConn -> {
-    host: 'r4a-platform.ddns.net';
-    port: 5782;
-    vhost: '/';
-    username: 'bot';
-    password: 'b0t';
+
+// ROS2Connections
+ROS2Connection LocalROSConn -> { }
+
+// TopicBridges
+TopicBridge odom_pub_bridge  -> {
+	msgType: "/nav_msgs/Odometry";
+	rosConn: LocalROSConn;
+	rosURI: "/odom";
+	brokerConn: MyBroker;
+	brokerURI: ".odom";
+	direction: R2B;
+}
+TopicBridge cmd_vel_sub_bridge  -> {
+	msgType: "/geometry_msgs/Twist";
+	rosConn: LocalROSConn;
+	rosURI: "/cmd_vel";
+	brokerConn: MyBroker;
+	brokerURI: ".cmd_vel";
+	direction: B2R;
+}
+TopicBridge motor_power_sub_bridge  -> {
+	msgType: "/geometry_msgs/Twist";
+	rosConn: LocalROSConn;
+	rosURI: "/motor_power";
+	brokerConn: MyBroker;
+	brokerURI: ".motor_power";
+	direction: B2R;
+}
+TopicBridge front_left_sonar_pub_bridge  -> {
+	msgType: "/sensor_msgs/Range";
+	rosConn: LocalROSConn;
+	rosURI: "/sonar/front_left";
+	brokerConn: MyBroker;
+	brokerURI: ".sonar.front_left";
+	direction: R2B;
+}
+TopicBridge front_right_sonar_pub_bridge  -> {
+	msgType: "/sensor_msgs/Range";
+	rosConn: LocalROSConn;
+	rosURI: "/sonar/front_right";
+	brokerConn: MyBroker;
+	brokerURI: ".sonar.front_right";
+	direction: R2B;
+}
+TopicBridge rear_sonar_pub_bridge  -> {
+	msgType: "/sensor_msgs/Range";
+	rosConn: LocalROSConn;
+	rosURI: "/sonar/rear";
+	brokerConn: MyBroker;
+	brokerURI: ".sonar.rear";
+	direction: R2B;
 }
 
-RedisConnection MyRedis -> {
-    host: 'localhost';
-    port: 6379;
-    username: '';
-    password: '';
+
+
+
+// AMQPConnection
+AMQPConnection MyBroker -> {
+	host: 'localhost';
+	port: 1883;
+	vhost: 'skata';
+	username: 'a';
+	password: 'a';
 }
 
-ROS2Connection LocalROSConn -> {}
 
-TopicBridge FrontSonarTopic -> {
-    msgType: "sensor_msgs/Range";
-    rosConn: LocalROSConn;
-    rosURI: "/sensor/sonar/front";
-    brokerConn: MyRedis;
-    brokerURI: "sensor.sonar.front";
-    direction: R2B;
-}
 
-TopicBridge RearSonarTopic -> {
-    msgType: "sensor_msgs/Range";
-    rosConn: LocalROSConn;
-    rosURI: "/sensor/sonar/rear";
-    brokerConn: MyRedis;
-    brokerURI: "sensor.sonar.rear";
-    direction: B2R;
-}
-
-ServiceBridge RearSonarState -> {
-    msgType: "std_srvs/SetBool";
-    rosConn: LocalROSConn;
-    rosURI: "/sensor/sonar/rear/state";
-    brokerConn: MyRedis;
-    brokerURI: "sensor.sonar.rear.state";
-    direction: B2R;
-}
