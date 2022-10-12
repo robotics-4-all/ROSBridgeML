@@ -39,9 +39,9 @@ def main():
 
 {% for c in bridges['topic']['b2r'] %}
     broker = BrokerDefinition(
-        name='{{ c.brokerConn.brokerRef.name }}',
-        host='{{ c.brokerConn.brokerRef.host }}',
-        port='{{ c.brokerConn.brokerRef.amqp_port }}',
+        name='{{ c.brokerConn.name }}',
+        host='{{ c.brokerConn.host }}',
+        port='{{ c.brokerConn.amqp_port }}',
         vhost='{{ c.brokerConn.vhost }}',
     )
     ros_ep_{{ c.name }} = ROSSubEndpoint(
@@ -61,9 +61,9 @@ def main():
 {% endfor %}
 {% for c in bridges['topic']['r2b'] %}
     broker = BrokerDefinition(
-        name='{{ c.brokerConn.brokerRef.name }}',
-        host='{{ c.brokerConn.brokerRef.host }}',
-        port='{{ c.brokerConn.brokerRef.amqp_port }}',
+        name='{{ c.brokerConn.name }}',
+        host='{{ c.brokerConn.host }}',
+        port='{{ c.brokerConn.amqp_port }}',
         vhost='{{ c.brokerConn.vhost }}',
     )
     ros_ep_{{ c.name }} = ROSPubEndpoint(
