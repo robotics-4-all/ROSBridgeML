@@ -1,68 +1,65 @@
+ROS2Connection LocalROSConn
+    host: "localhost";
+end
 
-// ROS2Connections
-ROS2Connection LocalROSConn -> { }
+AMQPConnection MyBroker
+	host: 'localhost';
+	port: 1883;
+	vhost: 'skata';
+	username: 'a';
+	password: 'a';
+end
 
-// TopicBridges
-TopicBridge odom_pub_bridge  -> {
-	msgType: "/nav_msgs/Odometry";
-	rosConn: LocalROSConn;
-	rosURI: "/odom";
-	brokerConn: MyBroker;
-	brokerURI: ".odom";
-	direction: R2B;
-}
-TopicBridge cmd_vel_sub_bridge  -> {
-	msgType: "/geometry_msgs/Twist";
-	rosConn: LocalROSConn;
-	rosURI: "/cmd_vel";
-	brokerConn: MyBroker;
-	brokerURI: ".cmd_vel";
-	direction: B2R;
-}
-TopicBridge motor_power_sub_bridge  -> {
-	msgType: "/geometry_msgs/Twist";
-	rosConn: LocalROSConn;
-	rosURI: "/motor_power";
-	brokerConn: MyBroker;
-	brokerURI: ".motor_power";
-	direction: B2R;
-}
-TopicBridge front_left_sonar_pub_bridge  -> {
-	msgType: "/sensor_msgs/Range";
-	rosConn: LocalROSConn;
-	rosURI: "/sonar/front_left";
-	brokerConn: MyBroker;
-	brokerURI: ".sonar.front_left";
-	direction: R2B;
-}
-TopicBridge front_right_sonar_pub_bridge  -> {
-	msgType: "/sensor_msgs/Range";
-	rosConn: LocalROSConn;
-	rosURI: "/sonar/front_right";
-	brokerConn: MyBroker;
-	brokerURI: ".sonar.front_right";
-	direction: R2B;
-}
-TopicBridge rear_sonar_pub_bridge  -> {
+TopicBridge odom_pub_bridge
+    msgType: "/nav_msgs/Odometry";
+    rosConn: LocalROSConn;
+    rosURI: "/odom";
+    brokerConn: MyBroker;
+    brokerURI: ".odom";
+    direction: R2B;
+end
+
+TopicBridge cmd_vel_sub_bridge
+    msgType: "/geometry_msgs/Twist";
+    rosConn: LocalROSConn;
+    rosURI: "/cmd_vel";
+    brokerConn: MyBroker;
+    brokerURI: ".cmd_vel";
+    direction: B2R;
+end
+
+TopicBridge motor_power_sub_bridge
+    msgType: "/geometry_msgs/Twist";
+    rosConn: LocalROSConn;
+    rosURI: "/motor_power";
+    brokerConn: MyBroker;
+    brokerURI: ".motor_power";
+    direction: B2R;
+end
+
+TopicBridge front_left_sonar_pub_bridge
+    msgType: "/sensor_msgs/Range";
+    rosConn: LocalROSConn;
+    rosURI: "/sonar/front_left";
+    brokerConn: MyBroker;
+    brokerURI: ".sonar.front_left";
+    direction: R2B;
+end
+
+TopicBridge front_right_sonar_pub_bridge
+    msgType: "/sensor_msgs/Range";
+    rosConn: LocalROSConn;
+    rosURI: "/sonar/front_right";
+    brokerConn: MyBroker;
+    brokerURI: ".sonar.front_right";
+    direction: R2B;
+end
+
+TopicBridge rear_sonar_pub_bridge
 	msgType: "/sensor_msgs/Range";
 	rosConn: LocalROSConn;
 	rosURI: "/sonar/rear";
 	brokerConn: MyBroker;
 	brokerURI: ".sonar.rear";
 	direction: R2B;
-}
-
-
-
-
-// AMQPConnection
-AMQPConnection MyBroker -> {
-	host: 'localhost';
-	port: 1883;
-	vhost: 'skata';
-	username: 'a';
-	password: 'a';
-}
-
-
-
+end

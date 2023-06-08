@@ -16,23 +16,25 @@ Connection: BrokerConnection | ROSConnection;
 ROSConnection: ROS1Connection | ROS2Connection;
 
 ROS1Connection:
-    'ROS1Connection' name=ID '->' '{'
+    'ROS1Connection' name=ID
     (
         ('host:' host=STRING ';')?
         ('port:' port=INT ';')?
     )#
-    '}'
+    'end'
 ;
 
 ROS2Connection:
-    'ROS2Connection' name=ID '->' '{' '}'
+    'ROS2Connection' name=ID
+        ('host:' host=STRING ';')?
+    'end'
 ;
 
 // Broker Connection Definition ---------------------------------------->
 BrokerConnection: RedisConnection | AMQPConnection | MQTTConnection;
 
 AMQPConnection:
-    'AMQPConnection' name=ID '->' '{'
+    'AMQPConnection' name=ID
     (
         ('host:' host=STRING ';')
         ('port:' port=INT ';')
@@ -40,11 +42,11 @@ AMQPConnection:
         ('password:' password=STRING ';')?
         ('vhost:' vhost=STRING ';')?
     )#
-    '}'
+    'end'
 ;
 
 RedisConnection:
-    'RedisConnection' name=ID '->' '{'
+    'RedisConnection' name=ID
     (
         ('host:' host=STRING ';')
         ('port:' port=INT ';')
@@ -52,25 +54,25 @@ RedisConnection:
         ('password:' password=STRING ';')?
         ('db:' db=INT ';')?
     )#
-    '}'
+    'end'
 ;
 
 MQTTConnection:
-    'RedisConnection' name=ID '->' '{'
+    'RedisConnection' name=ID
     (
         ('host:' host=STRING ';')
         ('port:' port=INT ';')
         ('username:' username=STRING ';')?
         ('password:' password=STRING ';')?
     )#
-    '}'
+    'end'
 ;
 // <--------------------------------------------------------------------
 
 Bridge: TopicBridge | ServiceBridge | ActionBridge;
 
 TopicBridge:
-    'TopicBridge' name=ID  '->' '{'
+    'TopicBridge' name=ID
     (
         ('msgType:' msgType=STRING ';')
         ('rosConn:' rosConn=[ROSConnection] ';')
@@ -79,11 +81,11 @@ TopicBridge:
         ('brokerURI:' brokerURI=STRING ';')
         ('direction:' direction=[BridgeDirection] ';')
     )#
-    '}'
+    'end'
 ;
 
 ServiceBridge:
-    'ServiceBridge' name=ID  '->' '{'
+    'ServiceBridge' name=ID
     (
         ('msgType:' msgType=STRING ';')
         ('rosConn:' rosConn=[ROSConnection] ';')
@@ -92,11 +94,11 @@ ServiceBridge:
         ('brokerURI:' brokerURI=STRING ';')
         ('direction:' direction=[BridgeDirection] ';')
     )#
-    '}'
+    'end'
 ;
 
 ActionBridge:
-    'ActionBridge' name=ID  '->' '{'
+    'ActionBridge' name=ID
     (
         ('msgType:' msgType=STRING ';')
         ('rosConn:' rosConn=[ROSConnection] ';')
@@ -105,7 +107,7 @@ ActionBridge:
         ('brokerURI:' brokerURI=STRING ';')
         ('direction:' direction=[BridgeDirection] ';')
     )#
-    '}'
+    'end'
 ;
 // <--------------------------------------------------------------------
 
