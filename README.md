@@ -1,8 +1,19 @@
-# rosbridge-dsl
+# rosbridgeml
 
-ROS + ROS2 bridges for message brokers
+A Domain-specific Language for Bridging ROS and ROS2 robotics systems to the IoT and
+Smart Environments systems.
 
+# Installation
 
-# Credits
+Create virtual environment:
 
-Initial project layout generated with `textx startproject`.
+```sh
+python -m venv myenv
+source myenv/bin/activate
+```
+
+Install the language:
+
+```sh
+pip install .
+```

@@ -2,7 +2,8 @@ from os.path import dirname, join
 from textx import metamodel_from_file
 import textx.scoping.providers as scoping_providers
 
-this_dir = dirname(__file__)
+CURRENT_FILE_DIR = dirname(__file__)
+GRAMMAR_DIR = join(CURRENT_FILE_DIR, "grammar")
 
 
 def get_mm(debug=False, global_scope=True):
@@ -10,7 +11,7 @@ def get_mm(debug=False, global_scope=True):
     Builds and returns a meta-model for Comm-IDL language.
     """
     mm= metamodel_from_file(
-        join(this_dir, 'rosbridge.tx'),
+        join(CURRENT_FILE_DIR, 'rosbridge.tx'),
         global_repository=global_scope,
         debug=debug
     )
@@ -47,6 +48,6 @@ def build_model(model_fpath):
 
 
 def get_grammar(debug=False):
-    with open(join(this_dir, 'rosbridge.tx')) as f:
+    with open(join(GRAMMAR_DIR, 'rosbridge.tx')) as f:
         return f.read()
 

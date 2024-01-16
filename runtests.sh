@@ -1,7 +1,7 @@
 #!/bin/sh
 # Run all tests and generate coverage report
 
-coverage run --source rosbridge_dsl -m py.test tests || exit 1
+coverage run --source rosbridgeml -m py.test tests || exit 1
 coverage report || exit 1
 # coverage report --fail-under 30 || exit 1
 # Run this to generate html report
