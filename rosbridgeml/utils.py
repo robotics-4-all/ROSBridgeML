@@ -11,7 +11,7 @@ def get_mm(debug=False, global_scope=True):
     Builds and returns a meta-model for Comm-IDL language.
     """
     mm= metamodel_from_file(
-        join(CURRENT_FILE_DIR, 'rosbridge.tx'),
+        join(GRAMMAR_DIR, 'rosbridge.tx'),
         global_repository=global_scope,
         debug=debug
     )
