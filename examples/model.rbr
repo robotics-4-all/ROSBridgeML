@@ -16,7 +16,6 @@ end
 TopicBridge odom_pub_bridge
     msgType: "/nav_msgs/Odometry"
     rosURI: "/odom"
-    broker: HomeMQTT
     brokerURI: "odom"
     direction: R2B
 end
@@ -24,7 +23,6 @@ end
 TopicBridge cmd_vel_sub_bridge
     msgType: "/geometry_msgs/Twist"
     rosURI: "/cmd_vel"
-    broker: HomeMQTT
     brokerURI: "cmd_vel"
     direction: B2R
 end
@@ -32,7 +30,6 @@ end
 TopicBridge motor_power_sub_bridge
     msgType: "/geometry_msgs/Twist"
     rosURI: "/motor_power"
-    broker: HomeMQTT
     brokerURI: "motor_power"
     direction: B2R
 end
@@ -40,7 +37,6 @@ end
 TopicBridge front_left_sonar_pub_bridge
     msgType: "/sensor_msgs/Range"
     rosURI: "/sonar/front_left"
-    broker: HomeMQTT
     brokerURI: "sonar.front_left"
     direction: R2B
 end
@@ -48,7 +44,6 @@ end
 TopicBridge front_right_sonar_pub_bridge
     msgType: "/sensor_msgs/Range"
     rosURI: "/sonar/front_right"
-    broker: HomeMQTT
     brokerURI: "sonar.front_right"
     direction: R2B
 end
@@ -56,7 +51,6 @@ end
 TopicBridge rear_sonar_pub_bridge
 	msgType: "/sensor_msgs/Range"
 	rosURI: "/sonar/rear"
-	broker: HomeMQTT
 	brokerURI: "sonar.rear"
 	direction: R2B
 end

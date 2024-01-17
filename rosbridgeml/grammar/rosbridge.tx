@@ -5,7 +5,7 @@ Model:
 (
     (imports*=Import)
     (rosSys=ROSSystem)
-    (brokers*=MessageBroker)
+    (broker=MessageBroker)
     (bridges*=Bridge)
 )#
 ;
@@ -29,7 +29,6 @@ TopicBridge:
     (
         ('msgType:' msgType=STRING)
         ('rosURI:' rosURI=STRING)
-        ('broker:' broker=[MessageBroker])
         ('brokerURI:' brokerURI=STRING)
         ('direction:' direction=[BridgeDirection])
     )#
@@ -41,7 +40,6 @@ ServiceBridge:
     (
         ('msgType:' msgType=STRING)
         ('rosURI:' rosURI=STRING)
-        ('broker:' broker=[MessageBroker])
         ('brokerURI:' brokerURI=STRING)
         ('direction:' direction=[BridgeDirection])
     )#
@@ -53,7 +51,6 @@ ActionBridge:
     (
         ('msgType:' msgType=STRING)
         ('rosURI:' rosURI=STRING)
-        ('broker:' broker=[MessageBroker])
         ('brokerURI:' brokerURI=STRING)
         ('direction:' direction=[BridgeDirection])
     )#
@@ -64,7 +61,6 @@ TFBridge:
     'TFBridge' name=ID
     (
         ('rosURI:' rosURI=STRING)?
-        ('broker:' broker=[MessageBroker])
         ('brokerURI:' brokerURI=STRING)
         ('direction:' direction=[BridgeDirection])
     )#
