@@ -150,67 +150,107 @@ if __name__ == "__main__":
     rclpy.init()
     nh = Node('ROSBridge')
     br_list = []
-    {% for bridge in model.bridges %}
     ## Broker Connection for Bridge ------------------------------------------>
-    {% if model.broker.__class__.__name__ == 'RedisBroker' %}
-    broker_type = TransportType.REDIS
-    from commlib.transports.redis import ConnectionParameters
-    conn_params = ConnectionParameters(
-        host='{{ model.broker.host }}',
-        port=int({{ model.broker.port }}),
-        db=int({{ model.broker.db }}),
-        username='{{ model.broker.username }}',
-        password='{{ model.broker.password }}',
-        ssl={{ model.broker.ssl }}
-    )
-    {% elif model.broker.__class__.__name__ == 'AMQPBroker' %}
-    broker_type = TransportType.AMQP
-    from commlib.transports.amqp import ConnectionParameters
-    conn_params = ConnectionParameters(
-        host='{{ model.broker.host }}',
-        port=int({{ model.broker.port }}),
-        vhost='{{ model.broker.vhost }}',
-        username='{{ model.broker.username }}',
-        password='{{ model.broker.password }}',
-        ssl={{ model.broker.ssl }}
-    )
-    {% elif model.broker.__class__.__name__ == 'MQTTBroker' %}
     broker_type = TransportType.MQTT
     from commlib.transports.mqtt import ConnectionParameters
     conn_params = ConnectionParameters(
-        host='{{ model.broker.host }}',
-        port=int({{ model.broker.port }}),
-        username='{{ model.broker.username }}',
-        password='{{ model.broker.password }}',
-        ssl={{ model.broker.ssl }}
+        host='localhost',
+        port=int(1883),
+        username='',
+        password='',
+        ssl=False
     )
-    {% endif %}
     ## <-----------------------------------------------------------------------
-    {% if bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'B2R' %}
-    ## Topic Bridge B2R ----------------------------------------------------->
-    from {{ bridge.msgType.split('/')[0] }}.msg import {{ bridge.msgType.split('/')[1] }}
-    br = B2RTopicBridge(nh, '{{ bridge.rosURI }}', {{
-        bridge.msgType.split('/')[1] }}, broker_type,
-                             '{{ bridge.brokerURI }}', conn_params)
-    br_list.append(br)
-    ## <-----------------------------------------------------------------------
-    {% elif bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'R2B' %}
     ## Topic Bridge R2B ----------------------------------------------------->
-    from {{ bridge.msgType.split('/')[0] }}.msg import {{ bridge.msgType.split('/')[1] }}
-    br = R2BTopicBridge(nh, '{{ bridge.rosURI }}', {{
-        bridge.msgType.split('/')[1] }}, broker_type,
-                             '{{ bridge.brokerURI }}', conn_params)
+    from .msg import nav_msgs
+    br = R2BTopicBridge(nh, '/odom', nav_msgs, broker_type,
+                             'odom', conn_params)
     br_list.append(br)
     ## <-----------------------------------------------------------------------
-    {% elif bridge.__class__.__name__ == 'ServiceBridge' and bridge.direction == 'B2R' %}
-    ## RPC Bridge B2R ------------------------------------------------------->
-    from {{ bridge.msgType.split('/')[0] }}.srv import {{ bridge.msgType.split('/')[1] }}
-    br = B2RServiceBridge(nh, '{{ bridge.rosURI }}', {{
-        bridge.msgType.split('/')[1] }}, broker_type,
-                             '{{ bridge.brokerURI }}', conn_params)
+    ## Broker Connection for Bridge ------------------------------------------>
+    broker_type = TransportType.MQTT
+    from commlib.transports.mqtt import ConnectionParameters
+    conn_params = ConnectionParameters(
+        host='localhost',
+        port=int(1883),
+        username='',
+        password='',
+        ssl=False
+    )
+    ## <-----------------------------------------------------------------------
+    ## Topic Bridge B2R ----------------------------------------------------->
+    from .msg import geometry_msgs
+    br = B2RTopicBridge(nh, '/cmd_vel', geometry_msgs, broker_type,
+                             'cmd_vel', conn_params)
     br_list.append(br)
     ## <-----------------------------------------------------------------------
-    {% endif %}
-    {% endfor %}
+    ## Broker Connection for Bridge ------------------------------------------>
+    broker_type = TransportType.MQTT
+    from commlib.transports.mqtt import ConnectionParameters
+    conn_params = ConnectionParameters(
+        host='localhost',
+        port=int(1883),
+        username='',
+        password='',
+        ssl=False
+    )
+    ## <-----------------------------------------------------------------------
+    ## Topic Bridge B2R ----------------------------------------------------->
+    from .msg import geometry_msgs
+    br = B2RTopicBridge(nh, '/motor_power', geometry_msgs, broker_type,
+                             'motor_power', conn_params)
+    br_list.append(br)
+    ## <-----------------------------------------------------------------------
+    ## Broker Connection for Bridge ------------------------------------------>
+    broker_type = TransportType.MQTT
+    from commlib.transports.mqtt import ConnectionParameters
+    conn_params = ConnectionParameters(
+        host='localhost',
+        port=int(1883),
+        username='',
+        password='',
+        ssl=False
+    )
+    ## <-----------------------------------------------------------------------
+    ## Topic Bridge R2B ----------------------------------------------------->
+    from .msg import sensor_msgs
+    br = R2BTopicBridge(nh, '/sonar/front_left', sensor_msgs, broker_type,
+                             'sonar.front_left', conn_params)
+    br_list.append(br)
+    ## <-----------------------------------------------------------------------
+    ## Broker Connection for Bridge ------------------------------------------>
+    broker_type = TransportType.MQTT
+    from commlib.transports.mqtt import ConnectionParameters
+    conn_params = ConnectionParameters(
+        host='localhost',
+        port=int(1883),
+        username='',
+        password='',
+        ssl=False
+    )
+    ## <-----------------------------------------------------------------------
+    ## Topic Bridge R2B ----------------------------------------------------->
+    from .msg import sensor_msgs
+    br = R2BTopicBridge(nh, '/sonar/front_right', sensor_msgs, broker_type,
+                             'sonar.front_right', conn_params)
+    br_list.append(br)
+    ## <-----------------------------------------------------------------------
+    ## Broker Connection for Bridge ------------------------------------------>
+    broker_type = TransportType.MQTT
+    from commlib.transports.mqtt import ConnectionParameters
+    conn_params = ConnectionParameters(
+        host='localhost',
+        port=int(1883),
+        username='',
+        password='',
+        ssl=False
+    )
+    ## <-----------------------------------------------------------------------
+    ## Topic Bridge R2B ----------------------------------------------------->
+    from .msg import sensor_msgs
+    br = R2BTopicBridge(nh, '/sonar/rear', sensor_msgs, broker_type,
+                             'sonar.rear', conn_params)
+    br_list.append(br)
+    ## <-----------------------------------------------------------------------
 
     rclpy.spin(nh)

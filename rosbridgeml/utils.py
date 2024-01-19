@@ -43,8 +43,8 @@ def build_model(model_fpath):
     model = mm.model_from_file(model_fpath)
     # print(model._tx_loaded_models)
     reg_models = mm._tx_model_repository.all_models.filename_to_model
-    models = [val for key, val in reg_models.items() if val != model]
-    return (model, models)
+    mimports = [val for key, val in reg_models.items() if val != model]
+    return (model, mimports)
 
 
 def get_grammar(debug=False):
