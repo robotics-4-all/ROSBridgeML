@@ -26,6 +26,7 @@ class GeneratorROS2:
 
     PY_DEPS = [
         ('commlib-py', '>=', '0.11.2'),
+        ('ros2-msg-transform', '>=', '0.2.2')
     ]
 
     @staticmethod
