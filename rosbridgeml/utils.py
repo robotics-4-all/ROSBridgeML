@@ -7,9 +7,6 @@ GRAMMAR_DIR = join(CURRENT_FILE_DIR, "grammar")
 
 
 def get_mm(debug=False, global_scope=True):
-    """
-    Builds and returns a meta-model for Comm-IDL language.
-    """
     mm= metamodel_from_file(
         join(GRAMMAR_DIR, 'rosbridge.tx'),
         global_repository=global_scope,
@@ -50,4 +47,3 @@ def build_model(model_fpath):
 def get_grammar(debug=False):
     with open(join(GRAMMAR_DIR, 'rosbridge.tx')) as f:
         return f.read()
-
