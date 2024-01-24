@@ -158,7 +158,7 @@ if __name__ == "__main__":
     conn_params = ConnectionParameters(
         host='{{ model.broker.host }}',
         port=int({{ model.broker.port }}),
-        db=int({{ model.broker.db }}),
+        db={{ model.broker.db }},
         username='{{ model.broker.username }}',
         password='{{ model.broker.password }}',
         ssl={{ model.broker.ssl }}
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     from commlib.transports.amqp import ConnectionParameters
     conn_params = ConnectionParameters(
         host='{{ model.broker.host }}',
-        port=int({{ model.broker.port }}),
+        port={{ model.broker.port }},
         vhost='{{ model.broker.vhost }}',
         username='{{ model.broker.username }}',
         password='{{ model.broker.password }}',
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     from commlib.transports.mqtt import ConnectionParameters
     conn_params = ConnectionParameters(
         host='{{ model.broker.host }}',
-        port=int({{ model.broker.port }}),
+        port={{ model.broker.port }},
         username='{{ model.broker.username }}',
         password='{{ model.broker.password }}',
         ssl={{ model.broker.ssl }}

@@ -2,8 +2,7 @@ from os.path import dirname, join
 from textx import metamodel_from_file
 import textx.scoping.providers as scoping_providers
 
-CURRENT_FILE_DIR = dirname(__file__)
-GRAMMAR_DIR = join(CURRENT_FILE_DIR, "grammar")
+from rosbridgeml.definitions import GRAMMAR_DIR
 
 
 def get_mm(debug=False, global_scope=True):
