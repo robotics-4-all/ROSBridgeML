@@ -39,6 +39,8 @@ class GeneratorROS2:
             return
         GeneratorROS2.report(model)
         code = GeneratorROS2.bridge_tpl.render(model=model)
+        for bridge in model.bridges:
+            print(bridge.msgType.split('/')[1])
         with open(out_file, 'w') as f:
             f.write(code)
         # Give execution permissions to the generated file
