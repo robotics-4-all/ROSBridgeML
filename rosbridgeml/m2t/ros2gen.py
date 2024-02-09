@@ -17,8 +17,6 @@ jinja_env = jinja2.Environment(
 )
 
 
-
-
 class GeneratorROS2:
     bridge_tpl = jinja_env.get_template('ros2_bridge.tpl')
     reqs_tpl = jinja_env.get_template('requirements.txt.tpl')

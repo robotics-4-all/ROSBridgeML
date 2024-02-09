@@ -150,7 +150,6 @@ if __name__ == "__main__":
     rclpy.init()
     nh = Node('ROSBridge')
     br_list = []
-    {% for bridge in model.bridges %}
     ## Broker Connection for Bridge ------------------------------------------>
     {% if model.broker.__class__.__name__ == 'RedisBroker' %}
     broker_type = TransportType.REDIS
@@ -185,6 +184,7 @@ if __name__ == "__main__":
         ssl={{ model.broker.ssl }}
     )
     {% endif %}
+    {% for bridge in model.bridges %}
     ## <-----------------------------------------------------------------------
     {% if bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'B2R' %}
     ## Topic Bridge B2R ----------------------------------------------------->

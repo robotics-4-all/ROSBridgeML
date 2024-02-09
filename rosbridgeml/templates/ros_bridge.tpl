@@ -36,67 +36,88 @@ from ros2broker import (
 
 def main():
     executor = ConnectorThreadExecutor()
-
-{% for c in bridges['topic']['b2r'] %}
+    ## Broker Connection for Bridge ------------------------------------------>
+    {% if model.broker.__class__.__name__ == 'RedisBroker' %}
+    broker_type = TransportType.REDIS
+    from commlib.transports.redis import ConnectionParameters
+    conn_params = ConnectionParameters(
+        host='{{ model.broker.host }}',
+        port=int({{ model.broker.port }}),
+        db={{ model.broker.db }},
+        username='{{ model.broker.username }}',
+        password='{{ model.broker.password }}',
+        ssl={{ model.broker.ssl }}
+    )
+    {% elif model.broker.__class__.__name__ == 'AMQPBroker' %}
+    broker_type = TransportType.AMQP
+    from commlib.transports.amqp import ConnectionParameters
+    conn_params = ConnectionParameters(
+        host='{{ model.broker.host }}',
+        port={{ model.broker.port }},
+        vhost='{{ model.broker.vhost }}',
+        username='{{ model.broker.username }}',
+        password='{{ model.broker.password }}',
+        ssl={{ model.broker.ssl }}
+    )
+    {% elif model.broker.__class__.__name__ == 'MQTTBroker' %}
+    broker_type = TransportType.MQTT
+    from commlib.transports.mqtt import ConnectionParameters
+    conn_params = ConnectionParameters(
+        host='{{ model.broker.host }}',
+        port={{ model.broker.port }},
+        username='{{ model.broker.username }}',
+        password='{{ model.broker.password }}',
+        ssl={{ model.broker.ssl }}
+    )
+    {% endif %}
+    
     broker = BrokerDefinition(
-        name='{{ c.brokerConn.name }}',
-        host='{{ c.brokerConn.host }}',
-        port='{{ c.brokerConn.amqp_port }}',
-        vhost='{{ c.brokerConn.vhost }}',
+        name='{{ model.broker.name }}',
+        host='{{ model.broker.host }}',
+        port={{ model.broker.port }},
+        username='{{ model.broker.username }}',
+        password='{{ model.broker.password }}',
+        ssl='{{ model.broker.ssl }}',
     )
-    ros_ep_{{ c.name }} = ROSSubEndpoint(
-        msg_type='{{ c.msgType }}',
-        uri='{{ c.rosURI }}',
-        name='{{ c.name }}'
+    
+    {% for bridge in model.bridges %}
+    {% if bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'B2R' %}
+    ros_ep_{{ bridge.name }} = ROSSubEndpoint(
+        msg_type='{{ bridge.msgType }}',
+        uri='{{ bridge.rosURI }}',
+        name='{{ bridge.name }}'
     )
-
-    broker_ep_{{ c.name }} = BrokerSubEndpoint(
-        uri='{{ c.brokerURI }}',
-        name='{{ c.name }}',
-        broker_ref=broker,
-        auth=BrokerAuthPlain(username='{{ c.brokerConn.username }}', password='{{ c.brokerConn.password }}')
+    broker_ep_{{ bridge.name }} = BrokerSubEndpoint(
+        uri='{{ bridge.brokerURI }}',
+        name='{{ bridge.name }}',
+        broker_ref=broker
     )
-
-    executor.run_connector(SubConnector(ros_ep_{{ c.name }}, broker_ep_{{ c.name }}))
-{% endfor %}
-{% for c in bridges['topic']['r2b'] %}
-    broker = BrokerDefinition(
-        name='{{ c.brokerConn.name }}',
-        host='{{ c.brokerConn.host }}',
-        port='{{ c.brokerConn.amqp_port }}',
-        vhost='{{ c.brokerConn.vhost }}',
+    executor.run_connector(SubConnector(ros_ep_{{ bridge.name }}, broker_ep_{{ bridge.name }}))
+    {% elif bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'R2B' %}
+    ros_ep_{{ bridge.name }} = ROSPubEndpoint(
+        msg_type='{{ bridge.msgType }}',
+        uri='{{ bridge.rosURI }}',
+        name='{{ bridge.name }}'
     )
-    ros_ep_{{ c.name }} = ROSPubEndpoint(
-        msg_type='{{ c.msgType }}',
-        uri='{{ c.rosURI }}',
-        name='{{ c.name }}'
+    broker_ep_{{ bridge.name }} = BrokerPubEndpoint(
+        uri='{{ bridge.brokerURI }}',
+        name='{{ bridge.name }}',
+        broker_ref=broker
     )
-
-    broker_ep_{{ c.name }} = BrokerPubEndpoint(
-        uri='{{ c.brokerURI }}',
-        name='{{ c.name }}',
-        broker_ref=broker,
-        auth=BrokerAuthPlain(username='{{ c.brokerConn.username }}', password='{{ c.brokerConn.password }}')
+    executor.run_connector(PubConnector(ros_ep_{{ bridge.name }}, broker_ep_{{ bridge.name }}))
+    {% elif bridge.__class__.__name__ == 'ServiceBridge' and bridge.direction == 'B2R' %}
+    ros_ep_{{ bridge.name }} = ROSServiceEndpoint(
+        srv_type='{{ bridge.msgType }}',
+        uri='{{ bridge.rosURI }}',
+        name='{{ bridge.name }}'
     )
-
-    executor.run_connector(PubConnector(ros_ep_{{ c.name }}, broker_ep_{{ c.name }}))
-{% endfor %}
-{% for c in bridges['rpc'] %}
-    ros_ep_{{ c.name }} = ROSServiceEndpoint(
-        srv_type='{{ c.msgType }}',
-        uri='{{ c.rosURI }}',
-        name='{{ c.name }}'
+    broker_ep_{{ bridge.name }} = BrokerRPCEndpoint(
+        uri='{{ bridge.brokerURI }}',
+        name='{{ bridge.name }}',
+        broker_ref=broker
     )
-
-    broker_ep_{{ c.name }} = BrokerRPCEndpoint(
-        uri='{{ c.brokerURI }}',
-        name='{{ c.name }}',
-        broker_ref=broker,
-        auth=BrokerAuthPlain(username='{{ c.brokerConn.username }}', password='{{ c.brokerConn.password }}')
-    )
-
-    executor.run_connector(RPCConnector(ros_ep_{{ c.name }}, broker_ep_{{ c.name }}))
-{% endfor %}
+    executor.run_connector(RPCConnector(ros_ep_{{ bridge.name }}, broker_ep_{{ bridge.name }}))
+    {% endfor %}
     executor.run_forever()
 
 if __name__ == "__main__":
