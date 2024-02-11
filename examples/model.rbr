@@ -5,12 +5,12 @@ ROSSystem MyROS2Robot
 end
 
 Broker<MQTT> HomeMQTT
-	host: 'localhost'
-	port: 1883
-	ssl: false
+    host: 'localhost'
+    port: 1883
+    ssl: false
     auth:
-	    username: ""
-	    password: ""
+        username: ""
+        password: ""
 end
 
 TopicBridge odom_pub_bridge
@@ -49,8 +49,8 @@ TopicBridge front_right_sonar_pub_bridge
 end
 
 TopicBridge rear_sonar_pub_bridge
-	msgType: "/sensor_msgs/Range"
-	rosURI: "/sonar/rear"
-	brokerURI: "sonar.rear"
-	direction: R2B
+    msgType: "/sensor_msgs/Range"
+    rosURI: "/sonar/rear"
+    brokerURI: "sonar.rear"
+    direction: R2B
 end
