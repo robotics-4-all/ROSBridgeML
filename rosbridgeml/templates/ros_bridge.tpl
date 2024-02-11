@@ -34,6 +34,7 @@ from ros_msg_transform import (
     ros_srv_resp_to_dict
 )
 
+
 class B2RTopicBridge:
 
     def __init__(self, ros_topic: str, msg_type: Any, broker_type: Any,
@@ -47,6 +48,7 @@ class B2RTopicBridge:
 
         self._init_ros_endpoint()
         self._init_broker_endpoint()
+        print(f'Started B2R Topic Bridge: {broker_type.name.lower()}://{broker_uri} -> ros://{self.ros_topic}')
 
     def _init_ros_endpoint(self):
         self.ros_pub = rospy.Publisher(
@@ -54,7 +56,6 @@ class B2RTopicBridge:
             self.msg_type,
             queue_size=self.queue_size
         )
-        rospy.loginfo(f'ROS Publisher <{self.ros_topic}> ready!')
 
     def _init_broker_endpoint(self):
         self.bsub = endpoint_factory(EndpointType.Subscriber,
@@ -82,8 +83,9 @@ class R2BTopicBridge:
         self.broker_type = broker_type
         self.broker_conn_params = broker_conn_params
 
-        self._init_ros_endpoint()
         self._init_broker_endpoint()
+        self._init_ros_endpoint()
+        print(f'Started R2B Topic Bridge: ros://{self.ros_topic} -> {broker_type.name.lower()}://{broker_uri}')
 
     def _init_ros_endpoint(self):
         self.ros_sub = rospy.Subscriber(
@@ -98,6 +100,7 @@ class R2BTopicBridge:
             topic=self.broker_uri,
             conn_params=self.broker_conn_params
         )
+        self.bpub.run()
 
     def on_msg(self, msg):
         _data = ros_msg_to_dict(msg)
@@ -116,8 +119,8 @@ def main():
         host='{{ model.broker.host }}',
         port=int({{ model.broker.port }}),
         db={{ model.broker.db }},
-        username='{{ model.broker.username }}',
-        password='{{ model.broker.password }}',
+        username='{{ model.broker.auth.username }}',
+        password='{{ model.broker.auth.password }}',
         ssl={{ model.broker.ssl }}
     )
     {% elif model.broker.__class__.__name__ == 'AMQPBroker' %}
@@ -127,8 +130,8 @@ def main():
         host='{{ model.broker.host }}',
         port={{ model.broker.port }},
         vhost='{{ model.broker.vhost }}',
-        username='{{ model.broker.username }}',
-        password='{{ model.broker.password }}',
+        username='{{ model.broker.auth.username }}',
+        password='{{ model.broker.auth.password }}',
         ssl={{ model.broker.ssl }}
     )
     {% elif model.broker.__class__.__name__ == 'MQTTBroker' %}
@@ -137,8 +140,8 @@ def main():
     conn_params = ConnectionParameters(
         host='{{ model.broker.host }}',
         port={{ model.broker.port }},
-        username='{{ model.broker.username }}',
-        password='{{ model.broker.password }}',
+        username='{{ model.broker.auth.username }}',
+        password='{{ model.broker.auth.password }}',
         ssl={{ model.broker.ssl }}
     )
     {% endif %}
@@ -171,7 +174,10 @@ def main():
     ## <-----------------------------------------------------------------------
     {% endif %}
     {% endfor %}
-    rospy.spin()
+    
+    rate = rospy.Rate(100)
+    while not rospy.is_shutdown():
+        rate.sleep()
 
 if __name__ == "__main__":
     main()
