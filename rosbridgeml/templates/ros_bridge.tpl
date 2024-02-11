@@ -101,7 +101,7 @@ class R2BTopicBridge:
 
     def on_msg(self, msg):
         _data = ros_msg_to_dict(msg)
-        self.nh.get_logger().info('Publishing: "%s"' % _data)
+        rospy.loginfo(f'Publishing: {_data}')
         self.bpub.publish(_data)
 
 
@@ -143,21 +143,12 @@ def main():
     )
     {% endif %}
     
-    broker = BrokerDefinition(
-        name='{{ model.broker.name }}',
-        host='{{ model.broker.host }}',
-        port={{ model.broker.port }},
-        username='{{ model.broker.username }}',
-        password='{{ model.broker.password }}',
-        ssl='{{ model.broker.ssl }}',
-    )
-    
     {% for bridge in model.bridges %}
     ## <-----------------------------------------------------------------------
     {% if bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'B2R' %}
     ## Topic Bridge B2R ----------------------------------------------------->
     from {{ bridge.msgType.split('/')[1] }}.msg import {{ bridge.msgType.split('/')[2] }}
-    br = B2RTopicBridge(nh, '{{ bridge.rosURI }}', {{
+    br = B2RTopicBridge('{{ bridge.rosURI }}', {{
         bridge.msgType.split('/')[2] }}, broker_type,
                              '{{ bridge.brokerURI }}', conn_params)
     br_list.append(br)
@@ -165,17 +156,17 @@ def main():
     {% elif bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'R2B' %}
     ## Topic Bridge R2B ----------------------------------------------------->
     from {{ bridge.msgType.split('/')[1] }}.msg import {{ bridge.msgType.split('/')[2] }}
-    br = R2BTopicBridge(nh, '{{ bridge.rosURI }}', {{
+    br = R2BTopicBridge('{{ bridge.rosURI }}', {{
         bridge.msgType.split('/')[2] }}, broker_type,
-                             '{{ bridge.brokerURI }}', conn_params)
+                        '{{ bridge.brokerURI }}', conn_params)
     br_list.append(br)
     ## <-----------------------------------------------------------------------
     {% elif bridge.__class__.__name__ == 'ServiceBridge' and bridge.direction == 'B2R' %}
     ## RPC Bridge B2R ------------------------------------------------------->
     from {{ bridge.msgType.split('/')[1] }}.srv import {{ bridge.msgType.split('/')[2] }}
-    br = B2RServiceBridge(nh, '{{ bridge.rosURI }}', {{
+    br = B2RServiceBridge('{{ bridge.rosURI }}', {{
         bridge.msgType.split('/')[2] }}, broker_type,
-                             '{{ bridge.brokerURI }}', conn_params)
+                          '{{ bridge.brokerURI }}', conn_params)
     br_list.append(br)
     ## <-----------------------------------------------------------------------
     {% endif %}
