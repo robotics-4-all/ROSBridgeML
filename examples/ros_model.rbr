@@ -1,0 +1,56 @@
+ROSSystem MyROSRobot
+    type: ROS
+    host: "localhost"
+
+end
+
+Broker<MQTT> HomeMQTT
+    host: 'localhost'
+    port: 1883
+    ssl: false
+    auth:
+        username: ""
+        password: ""
+end
+
+TopicBridge odom_pub_bridge
+    msgType: "/nav_msgs/Odometry"
+    rosURI: "/odom"
+    brokerURI: "odom"
+    direction: R2B
+end
+
+TopicBridge cmd_vel_sub_bridge
+    msgType: "/geometry_msgs/Twist"
+    rosURI: "/cmd_vel"
+    brokerURI: "cmd_vel"
+    direction: B2R
+end
+
+TopicBridge motor_power_sub_bridge
+    msgType: "/geometry_msgs/Twist"
+    rosURI: "/motor_power"
+    brokerURI: "motor_power"
+    direction: B2R
+end
+
+TopicBridge front_left_sonar_pub_bridge
+    msgType: "/sensor_msgs/Range"
+    rosURI: "/sonar/front_left"
+    brokerURI: "sonar.front_left"
+    direction: R2B
+end
+
+TopicBridge front_right_sonar_pub_bridge
+    msgType: "/sensor_msgs/Range"
+    rosURI: "/sonar/front_right"
+    brokerURI: "sonar.front_right"
+    direction: R2B
+end
+
+TopicBridge rear_sonar_pub_bridge
+    msgType: "/sensor_msgs/Range"
+    rosURI: "/sonar/rear"
+    brokerURI: "sonar.rear"
+    direction: R2B
+end

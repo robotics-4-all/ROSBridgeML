@@ -20,7 +20,7 @@ ROSSystem:
     'end'
 ;
 
-ROSType: "ROS1" | "ROS2";
+ROSType: "ROS" | "ROS2";
 
 Bridge: TopicBridge | ServiceBridge | ActionBridge;
 

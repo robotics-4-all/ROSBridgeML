@@ -16,26 +16,98 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals
-)
+from typing import Any
+import rospy
+import time
 
 import sys
 
-from ros2broker import (
-    PubConnector, ROSPubEndpoint, BrokerPubEndpoint,
-    SubConnector, ROSSubEndpoint, BrokerSubEndpoint,
-    RPCConnector, ROSServiceEndpoint, BrokerRPCEndpoint,
-    BrokerAuthPlain, BrokerDefinition,
-    ConnectorThreadExecutor
+from commlib.endpoints import endpoint_factory, EndpointType, TransportType
+from commlib.transports.redis import Subscriber, ConnectionParameters
+
+from ros_msg_transform import (
+    ros_msg_to_dict,
+    get_message_class,
+    get_service_class,
+    dict_to_ros_msg,
+    dict_to_ros_srv_request,
+    ros_srv_resp_to_dict
 )
+
+class B2RTopicBridge:
+
+    def __init__(self, ros_topic: str, msg_type: Any, broker_type: Any,
+                 broker_uri, broker_conn_params):
+        self.ros_topic = ros_topic
+        self.broker_uri = broker_uri
+        self.msg_type = msg_type
+        self.broker_type = broker_type
+        self.broker_conn_params = broker_conn_params
+        self.queue_size = 10
+
+        self._init_ros_endpoint()
+        self._init_broker_endpoint()
+
+    def _init_ros_endpoint(self):
+        self.ros_pub = rospy.Publisher(
+            self.ros_topic,
+            self.msg_type,
+            queue_size=self.queue_size
+        )
+        rospy.loginfo(f'ROS Publisher <{self.ros_topic}> ready!')
+
+    def _init_broker_endpoint(self):
+        self.bsub = endpoint_factory(EndpointType.Subscriber,
+                                     self.broker_type)(
+            topic=self.broker_uri,
+            on_message=self.on_msg,
+            conn_params=self.broker_conn_params
+        )
+        self.bsub.run()
+
+    def on_msg(self, data):
+        _msg = dict_to_ros_msg(data, self.msg_type)
+        rospy.loginfo(f'Publishing: {_msg}')
+        self.ros_pub.publish(_msg)
+
+
+class R2BTopicBridge:
+
+    def __init__(self, ros_topic: str, msg_type: Any,
+                 broker_type: Any, broker_uri,
+                 broker_conn_params):
+        self.ros_topic = ros_topic
+        self.broker_uri = broker_uri
+        self.msg_type = msg_type
+        self.broker_type = broker_type
+        self.broker_conn_params = broker_conn_params
+
+        self._init_ros_endpoint()
+        self._init_broker_endpoint()
+
+    def _init_ros_endpoint(self):
+        self.ros_sub = rospy.Subscriber(
+            self.ros_topic,
+            self.msg_type,
+            self.on_msg
+        )
+
+    def _init_broker_endpoint(self):
+        self.bpub = endpoint_factory(EndpointType.Publisher,
+                                     self.broker_type)(
+            topic=self.broker_uri,
+            conn_params=self.broker_conn_params
+        )
+
+    def on_msg(self, msg):
+        _data = ros_msg_to_dict(msg)
+        self.nh.get_logger().info('Publishing: "%s"' % _data)
+        self.bpub.publish(_data)
 
 
 def main():
-    executor = ConnectorThreadExecutor()
+    rospy.init_node('ROS2BrokerBridge')
+    br_list = []
     ## Broker Connection for Bridge ------------------------------------------>
     {% if model.broker.__class__.__name__ == 'RedisBroker' %}
     broker_type = TransportType.REDIS
@@ -81,44 +153,34 @@ def main():
     )
     
     {% for bridge in model.bridges %}
+    ## <-----------------------------------------------------------------------
     {% if bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'B2R' %}
-    ros_ep_{{ bridge.name }} = ROSSubEndpoint(
-        msg_type='{{ bridge.msgType }}',
-        uri='{{ bridge.rosURI }}',
-        name='{{ bridge.name }}'
-    )
-    broker_ep_{{ bridge.name }} = BrokerSubEndpoint(
-        uri='{{ bridge.brokerURI }}',
-        name='{{ bridge.name }}',
-        broker_ref=broker
-    )
-    executor.run_connector(SubConnector(ros_ep_{{ bridge.name }}, broker_ep_{{ bridge.name }}))
+    ## Topic Bridge B2R ----------------------------------------------------->
+    from {{ bridge.msgType.split('/')[1] }}.msg import {{ bridge.msgType.split('/')[2] }}
+    br = B2RTopicBridge(nh, '{{ bridge.rosURI }}', {{
+        bridge.msgType.split('/')[2] }}, broker_type,
+                             '{{ bridge.brokerURI }}', conn_params)
+    br_list.append(br)
+    ## <-----------------------------------------------------------------------
     {% elif bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'R2B' %}
-    ros_ep_{{ bridge.name }} = ROSPubEndpoint(
-        msg_type='{{ bridge.msgType }}',
-        uri='{{ bridge.rosURI }}',
-        name='{{ bridge.name }}'
-    )
-    broker_ep_{{ bridge.name }} = BrokerPubEndpoint(
-        uri='{{ bridge.brokerURI }}',
-        name='{{ bridge.name }}',
-        broker_ref=broker
-    )
-    executor.run_connector(PubConnector(ros_ep_{{ bridge.name }}, broker_ep_{{ bridge.name }}))
+    ## Topic Bridge R2B ----------------------------------------------------->
+    from {{ bridge.msgType.split('/')[1] }}.msg import {{ bridge.msgType.split('/')[2] }}
+    br = R2BTopicBridge(nh, '{{ bridge.rosURI }}', {{
+        bridge.msgType.split('/')[2] }}, broker_type,
+                             '{{ bridge.brokerURI }}', conn_params)
+    br_list.append(br)
+    ## <-----------------------------------------------------------------------
     {% elif bridge.__class__.__name__ == 'ServiceBridge' and bridge.direction == 'B2R' %}
-    ros_ep_{{ bridge.name }} = ROSServiceEndpoint(
-        srv_type='{{ bridge.msgType }}',
-        uri='{{ bridge.rosURI }}',
-        name='{{ bridge.name }}'
-    )
-    broker_ep_{{ bridge.name }} = BrokerRPCEndpoint(
-        uri='{{ bridge.brokerURI }}',
-        name='{{ bridge.name }}',
-        broker_ref=broker
-    )
-    executor.run_connector(RPCConnector(ros_ep_{{ bridge.name }}, broker_ep_{{ bridge.name }}))
+    ## RPC Bridge B2R ------------------------------------------------------->
+    from {{ bridge.msgType.split('/')[1] }}.srv import {{ bridge.msgType.split('/')[2] }}
+    br = B2RServiceBridge(nh, '{{ bridge.rosURI }}', {{
+        bridge.msgType.split('/')[2] }}, broker_type,
+                             '{{ bridge.brokerURI }}', conn_params)
+    br_list.append(br)
+    ## <-----------------------------------------------------------------------
+    {% endif %}
     {% endfor %}
-    executor.run_forever()
+    rospy.spin()
 
 if __name__ == "__main__":
     main()
