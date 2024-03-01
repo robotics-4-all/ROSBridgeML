@@ -59,25 +59,9 @@ class B2RServiceBridge:
         return _dresp
 
     def send_request(self, req):
-        future = self.cli.call_async(req)
-        return future
-
-    def wait_for_ros_resp(self, future):
-        response = None
-        while True:
-            if future.done():
-                try:
-                    response = minimal_client.future.result()
-                except Exception as e:
-                    minimal_client.get_logger().info(
-                        'Service call failed %r' % (e,))
-                    response = self.msg_type.Response()
-                else:
-                    minimal_client.get_logger().info(
-                        'Result of add_two_ints: for %d + %d = %d' %
-                        (minimal_client.req.a, minimal_client.req.b, response.sum))
-                break
-        return response
+        future = self.ros_client.call_async(req)
+        rclpy.spin_until_future_complete(self, future)
+        return self.future.result()
 
 
 class B2RTopicBridge:
@@ -150,7 +134,6 @@ if __name__ == "__main__":
     rclpy.init()
     nh = Node('ROSBridge')
     br_list = []
-    {% for bridge in model.bridges %}
     ## Broker Connection for Bridge ------------------------------------------>
     {% if model.broker.__class__.__name__ == 'RedisBroker' %}
     broker_type = TransportType.REDIS
@@ -185,6 +168,7 @@ if __name__ == "__main__":
         ssl={{ model.broker.ssl }}
     )
     {% endif %}
+    {% for bridge in model.bridges %}
     ## <-----------------------------------------------------------------------
     {% if bridge.__class__.__name__ == 'TopicBridge' and bridge.direction == 'B2R' %}
     ## Topic Bridge B2R ----------------------------------------------------->

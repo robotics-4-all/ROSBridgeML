@@ -1,4 +1,7 @@
-commlib-py>=0.11.2
 fastapi>=0.100.0
-rich
+python-multipart
+aiofiles
+rich==13.4.2
 jinja2
+uvicorn
+textX
