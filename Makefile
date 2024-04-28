@@ -17,4 +17,4 @@ help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
 docker:
-	docker build . -t rbml-api
+	docker build . -t rbml
